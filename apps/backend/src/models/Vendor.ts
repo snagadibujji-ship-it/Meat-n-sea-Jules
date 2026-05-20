@@ -8,6 +8,7 @@ export interface IVendor extends Document {
   };
   isOpen: boolean;
   status: 'open' | 'busy' | 'closed';
+  serviceRadiusKm: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -21,6 +22,7 @@ const VendorSchema: Schema = new Schema(
     },
     isOpen: { type: Boolean, default: true },
     status: { type: String, enum: ['open', 'busy', 'closed'], default: 'open' },
+    serviceRadiusKm: { type: Number, default: 5 }, // Default radius for delivery
   },
   { timestamps: true }
 );

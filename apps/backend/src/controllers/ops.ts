@@ -107,6 +107,43 @@ export const placeOrder = async (req: Request, res: Response) => {
         });
     }
 
+    const { vendorId, userLocation } = req.body; // userLocation expects { lng: number, lat: number }
+    if (!vendorId || !userLocation) {
+        return res.status(400).json({ error: 'vendorId and userLocation are required' });
+    }
+
+    const vendor = await Vendor.findById(vendorId);
+    if (!vendor || !vendor.isOpen) {
+        return res.status(400).json({ error: 'Vendor is closed or not found' });
+    }
+
+    // Missing requirement: Order Radius Gating via $nearSphere
+    // Check if the user is within the vendor's serviceRadiusKm
+    const distanceCheck = await Vendor.aggregate([
+        {
+            $geoNear: {
+                near: {
+                    type: 'Point',
+                    coordinates: [parseFloat(userLocation.lng), parseFloat(userLocation.lat)]
+                },
+                distanceField: 'distance',
+                spherical: true,
+                query: { _id: vendor._id },
+            }
+        }
+    ]);
+
+    if (distanceCheck.length === 0) {
+        return res.status(400).json({ error: 'Distance check failed' });
+    }
+
+    const distanceInMeters = distanceCheck[0].distance;
+    const distanceInKm = distanceInMeters / 1000;
+
+    if (distanceInKm > vendor.serviceRadiusKm) {
+        return res.status(403).json({ error: `Out of delivery range. Vendor only serves within ${vendor.serviceRadiusKm}km.` });
+    }
+
     // Proceed with atomic order creation logic here...
     res.status(201).json({ message: 'Order created successfully' });
   } catch (error) {

@@ -9,10 +9,7 @@
     "dev": "concurrently \"pnpm:dev:*\""
   },
   "devDependencies": {
-    "@types/express": "^5.0.6",
     "concurrently": "^9.2.1",
-    "express": "^5.2.1",
-    "mongoose": "8.1.0",
     "turbo": "^2.9.14",
     "typescript": "^6.0.3"
   }

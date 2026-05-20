@@ -1,0 +1,30 @@
+import express from 'express';
+import mongoose from 'mongoose';
+import routes from './routes';
+import { startRedisCleanupListener } from './workers/dispatchCleanup';
+
+const app = express();
+
+app.use(express.json());
+
+// API Routes
+app.use('/api', routes);
+
+// Database connection
+const PORT = process.env.PORT || 5000;
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/meat-n-sea';
+
+mongoose.connect(MONGO_URI)
+  .then(() => {
+    console.log('Connected to MongoDB');
+
+    // Start listening for Redis TTL expirations to clean up dispatch offers
+    startRedisCleanupListener();
+
+    app.listen(PORT, () => {
+      console.log(`Server listening on port ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error('Failed to connect to MongoDB', err);
+  });
