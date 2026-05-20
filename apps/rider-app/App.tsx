@@ -39,11 +39,11 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#0A0F1D',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 20 },
-  btn: { backgroundColor: '#3b82f6', padding: 16, borderRadius: 8 },
+  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 20, color: '#ffffff' },
+  btn: { backgroundColor: '#1E6FBF', padding: 16, borderRadius: 8 },
   btnText: { color: '#fff', fontWeight: 'bold' }
 });

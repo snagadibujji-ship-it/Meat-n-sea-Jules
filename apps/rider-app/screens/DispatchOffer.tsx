@@ -62,15 +62,15 @@ export default function DispatchOfferModal({ isVisible, order, onAccept, onRejec
 
 const styles = StyleSheet.create({
   overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center' },
-  modalCard: { width: '85%', backgroundColor: 'white', borderRadius: 16, padding: 24, alignItems: 'center' },
-  header: { fontSize: 22, fontWeight: 'bold', marginBottom: 8 },
-  timerText: { fontSize: 36, fontWeight: '900', color: '#ef4444', marginBottom: 24 },
+  modalCard: { width: '85%', backgroundColor: '#171f33', borderRadius: 16, padding: 24, alignItems: 'center' },
+  header: { fontSize: 22, fontWeight: 'bold', marginBottom: 8, color: '#ffffff' },
+  timerText: { fontSize: 36, fontWeight: '900', color: '#CC0000', marginBottom: 24 },
   warningBox: { backgroundColor: '#fef3c7', padding: 16, borderRadius: 8, borderColor: '#f59e0b', borderWidth: 1, marginBottom: 24, width: '100%' },
   warningText: { color: '#d97706', fontWeight: 'bold', fontSize: 16, marginBottom: 4 },
   warningSubText: { color: '#b45309', fontSize: 14 },
   actions: { flexDirection: 'row', justifyContent: 'space-between', width: '100%', gap: 16 },
   button: { flex: 1, padding: 16, borderRadius: 8, alignItems: 'center' },
   rejectBtn: { backgroundColor: '#e5e7eb' },
-  acceptBtn: { backgroundColor: '#3b82f6' },
-  buttonText: { fontWeight: 'bold', fontSize: 16, color: '#1f2937' },
+  acceptBtn: { backgroundColor: '#1E6FBF' },
+  buttonText: { fontWeight: 'bold', fontSize: 16, color: '#ffffff' },
 });
