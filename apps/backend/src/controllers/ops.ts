@@ -39,6 +39,37 @@ export const getNearbyVendors = async (req: Request, res: Response) => {
 };
 
 // =========================================================================
+// SPRINT C: WHATSAPP FALLBACK LINK
+// =========================================================================
+export const getOrderWhatsAppLink = async (req: Request, res: Response) => {
+  try {
+    const { orderId } = req.params;
+
+    // Fetch order and populate vendor to get the phone number
+    const order = await Order.findById(orderId).populate('vendorId', 'phone name');
+
+    if (!order) return res.status(404).json({ error: 'Order not found' });
+
+    const vendor = order.vendorId as any; // Type override since it's populated
+    if (!vendor || !vendor.phone) {
+        return res.status(404).json({ error: 'Vendor contact information not available' });
+    }
+
+    // Format phone number (assuming +91 is implicitly needed or stored in DB)
+    const phone = vendor.phone.startsWith('+91') ? vendor.phone.replace('+91', '91') : `91${vendor.phone}`;
+
+    // Construct zero-cost WhatsApp deep link
+    const text = encodeURIComponent(`Hello ${vendor.name}, I am checking on Order #${order._id.toString()}.`);
+    const link = `https://wa.me/${phone}?text=${text}`;
+
+    res.json({ link });
+  } catch (error) {
+    console.error('WhatsApp Link Error:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+// =========================================================================
 // INVENTORY CONTROLLER: Vendor 1-click toggle stock
 // =========================================================================
 export const toggleProductStock = async (req: Request, res: Response) => {

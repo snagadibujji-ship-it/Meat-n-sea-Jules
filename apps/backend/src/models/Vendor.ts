@@ -2,6 +2,7 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IVendor extends Document {
   name: string;
+  phone: string;
   location: {
     type: 'Point';
     coordinates: number[]; // [longitude, latitude]
@@ -16,6 +17,7 @@ export interface IVendor extends Document {
 const VendorSchema: Schema = new Schema(
   {
     name: { type: String, required: true },
+    phone: { type: String, required: true },
     location: {
       type: { type: String, enum: ['Point'], required: true },
       coordinates: { type: [Number], required: true }, // [longitude, latitude]
