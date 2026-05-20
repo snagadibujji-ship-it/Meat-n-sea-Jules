@@ -29,6 +29,12 @@ importers:
 
   apps/backend: {}
 
+  shared:
+    devDependencies:
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+
 packages:
 
   '@mongodb-js/saslprep@1.4.11':

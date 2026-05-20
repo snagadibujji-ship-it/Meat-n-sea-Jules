@@ -100,7 +100,8 @@ export const placeOrder = async (req: Request, res: Response) => {
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     // Enforce limits immediately!
-    if (!user.canPlaceOrder()) {
+    const canPlace = await user.canPlaceOrder();
+    if (!canPlace) {
         return res.status(403).json({
             error: 'Cannot place order. Ensure your phone is verified and you have fewer than 5 active orders.'
         });

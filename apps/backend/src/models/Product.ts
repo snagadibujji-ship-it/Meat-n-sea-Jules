@@ -29,4 +29,24 @@ ProductSchema.pre('save', function (this: IProduct, next: (err?: mongoose.Callba
   next();
 });
 
+// Pre-findOneAndUpdate hook: catch updates that modify stockQuantity
+ProductSchema.pre('findOneAndUpdate', function (next) {
+  const update = this.getUpdate() as mongoose.UpdateQuery<IProduct>;
+
+  if (update && update.$set && update.$set.stockQuantity !== undefined) {
+    if (update.$set.stockQuantity <= 0) {
+      update.$set.isOutOfStock = true;
+    } else {
+      update.$set.isOutOfStock = false;
+    }
+  } else if (update && update.stockQuantity !== undefined) {
+      if ((update as any).stockQuantity <= 0) {
+          (update as any).isOutOfStock = true;
+      } else {
+          (update as any).isOutOfStock = false;
+      }
+  }
+  next();
+});
+
 export default mongoose.model<IProduct>('Product', ProductSchema);
