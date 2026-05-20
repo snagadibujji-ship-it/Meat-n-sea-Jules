@@ -4,6 +4,11 @@ export interface User {
   role: 'customer' | 'vendor' | 'partner' | 'admin';
 }
 
+export interface IStatusTimeline {
+  status: 'pending' | 'accepted' | 'preparing' | 'ready' | 'out_for_delivery' | 'delivered' | 'cancelled';
+  timestamp: string; // Serialized Date from API
+}
+
 export interface Order {
   id: string;
   customerId: string;
@@ -13,6 +18,7 @@ export interface Order {
   totalAmountPaise: number;
   paymentMethod: 'cod' | 'online';
   currentStatus: string;
+  statusTimeline: IStatusTimeline[];
 }
 
 export interface Ledger {

@@ -70,6 +70,33 @@ export const getOrderWhatsAppLink = async (req: Request, res: Response) => {
 };
 
 // =========================================================================
+// VENDOR CONTROLLER: Toggle Open/Closed Status
+// =========================================================================
+export const toggleVendorStatus = async (req: Request, res: Response) => {
+  try {
+    const { vendorId } = req.params;
+    const { isOpen } = req.body;
+
+    const vendor = await Vendor.findById(vendorId);
+    if (!vendor) {
+      return res.status(404).json({ error: 'Vendor not found' });
+    }
+
+    vendor.isOpen = isOpen;
+    if (!isOpen) {
+      vendor.status = 'closed';
+    } else {
+      vendor.status = 'open'; // simplified default flow
+    }
+
+    await vendor.save();
+    res.json(vendor);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+// =========================================================================
 // INVENTORY CONTROLLER: Vendor 1-click toggle stock
 // =========================================================================
 export const toggleProductStock = async (req: Request, res: Response) => {
