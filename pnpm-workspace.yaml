@@ -1,0 +1,7 @@
+packages:
+  - 'apps/*'
+  - 'server'
+  - 'shared'
+allowBuilds:
+  es5-ext: set this to true or false
+  esbuild: set this to true or false

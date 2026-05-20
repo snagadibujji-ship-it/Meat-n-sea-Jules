@@ -1,0 +1,21 @@
+{
+  "name": "meat-n-sea",
+  "private": true,
+  "scripts": {
+    "dev:user": "pnpm --filter user-app dev",
+    "dev:vendor": "pnpm --filter vendor-app dev",
+    "dev:delivery": "pnpm --filter delivery-app dev",
+    "dev:admin": "pnpm --filter admin-app dev",
+    "dev:server": "pnpm --filter server dev",
+    "dev": "concurrently \"pnpm:dev:*\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "turbo": "^2.9.14",
+    "typescript": "^6.0.3",
+    "vite": "^8.0.13"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3"
+  }
+}
