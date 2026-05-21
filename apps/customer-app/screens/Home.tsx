@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, StyleSheet, FlatList } from 'react-native';
 import { useSearch, useAppStore } from 'shared';
-import StudioSubscriptions from './StudioSubscriptions';
 import ModeSwitcher from '../components/ModeSwitcher';
 import BazaarHome from './BazaarHome';
-import StudioHome from './StudioHome';
+import StudioSubscriptions from './StudioSubscriptions';
 import StudioNudge from '../components/StudioNudge';
 
 export default function Home() {
@@ -49,22 +48,20 @@ export default function Home() {
     </View>
   );
 
-  // Dynamic Styles based on Mode
+  // Dynamic Styles based on Mode using the new tokens
   const isBazaar = mode === 'bazaar';
-  const headerBgColor = isBazaar ? '#F97316' : '#CC0000';
-  const headerBorderColor = isBazaar ? '#c2410c' : '#FFD400';
-  const pageBgColor = isBazaar ? '#FFF7ED' : '#0A0F1D';
+  const headerBgColor = isBazaar ? '#003366' : '#0a0a0a';
+  const pageBgColor = isBazaar ? '#f7f9fd' : '#131313';
 
   return (
     <View style={[styles.container, { backgroundColor: pageBgColor }]}>
-      <View style={[styles.header, { backgroundColor: headerBgColor, borderBottomColor: headerBorderColor }]}>
+      <View style={[styles.header, { backgroundColor: headerBgColor }]}>
         <ModeSwitcher />
-        <StudioNudge />
         <View style={styles.searchContainer}>
           <TextInput
             style={[styles.searchInput, isBazaar ? styles.searchInputBazaar : styles.searchInputStudio]}
             placeholder="Search for fish, chicken, or stores..."
-            placeholderTextColor={isBazaar ? "#9ca3af" : "#6b7280"}
+            placeholderTextColor={isBazaar ? "#737780" : "#99907c"}
             value={searchInput}
             onChangeText={setSearchInput}
           />
@@ -93,6 +90,8 @@ export default function Home() {
            {isBazaar ? <BazaarHome /> : <StudioSubscriptions />}
         </View>
       )}
+
+      <StudioNudge />
     </View>
   );
 }
@@ -100,37 +99,38 @@ export default function Home() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   header: {
-    padding: 16,
+    padding: 20,
     paddingTop: 60,
-    borderBottomWidth: 4,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.1)',
   },
   searchContainer: {
-    marginTop: 8,
+    marginTop: 12,
   },
   searchInput: {
-    borderRadius: 8,
+    borderRadius: 16,
     padding: 16,
     fontSize: 16,
     borderWidth: 1,
   },
   searchInputBazaar: {
     backgroundColor: '#ffffff',
-    color: '#1f2937',
-    borderColor: '#e5e7eb',
+    color: '#191c1f',
+    borderColor: '#EBEBEB',
   },
   searchInputStudio: {
-    backgroundColor: '#0A0F1D',
-    color: '#ffffff',
-    borderColor: '#374151',
+    backgroundColor: '#1c1b1b',
+    color: '#e5e2e1',
+    borderColor: '#353534',
   },
   loadingText: {
-    color: '#FFD400',
+    color: '#d4af37',
     marginTop: 8,
     fontSize: 12,
   },
   resultsContainer: {
     flex: 1,
-    padding: 16,
+    padding: 20,
   },
   contentContainer: {
     flex: 1,
@@ -138,14 +138,14 @@ const styles = StyleSheet.create({
   resultItem: {
     backgroundColor: '#171f33',
     padding: 16,
-    borderRadius: 8,
-    marginBottom: 12,
+    borderRadius: 16,
+    marginBottom: 16,
     borderLeftWidth: 4,
-    borderLeftColor: '#CC0000',
+    borderLeftColor: '#d4af37',
   },
-  resultName: { fontSize: 18, fontWeight: 'bold', color: '#ffffff' },
+  resultName: { fontSize: 18, fontWeight: '700', color: '#ffffff' },
   resultDesc: { fontSize: 14, color: '#9ca3af', marginTop: 4 },
-  resultCategory: { fontSize: 12, color: '#FFD400', marginTop: 4, fontWeight: 'bold' },
+  resultCategory: { fontSize: 12, color: '#d4af37', marginTop: 4, fontWeight: 'bold' },
   resultMeta: { fontSize: 12, color: '#6b7280', marginTop: 8 },
   emptyText: { color: '#9ca3af', textAlign: 'center', marginTop: 32, fontSize: 16 },
 });

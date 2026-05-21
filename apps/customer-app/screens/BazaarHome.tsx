@@ -10,22 +10,25 @@ export default function BazaarHome() {
   );
 }
 
+// Stitch Theme: Oceanic Premium Commerce (Light Mode)
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 24,
-    backgroundColor: '#FFF7ED',
+    backgroundColor: '#f7f9fd', // base background
     alignItems: 'center',
     justifyContent: 'center',
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#F97316',
+    fontFamily: 'sans-serif', // Assuming Plus Jakarta Sans isn't loaded
+    fontSize: 28, // headline-md
+    fontWeight: '700',
+    color: '#003366', // Primary Deep Ocean Blue
     marginBottom: 8,
+    letterSpacing: -0.5,
   },
   subtitle: {
     fontSize: 16,
-    color: '#431407',
+    color: '#475569', // text-muted
   }
 });

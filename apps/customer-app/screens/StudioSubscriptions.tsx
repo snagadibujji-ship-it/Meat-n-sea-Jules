@@ -28,7 +28,7 @@ export default function StudioSubscriptions() {
   if (plansLoading || subsLoading) {
     return (
       <View style={[styles.container, styles.center]}>
-        <ActivityIndicator size="large" color="#FFD400" />
+        <ActivityIndicator size="large" color="#d4af37" />
       </View>
     );
   }
@@ -48,7 +48,7 @@ export default function StudioSubscriptions() {
           {mySubs.map((sub: any) => (
              <View key={sub._id} style={styles.activeSubCard}>
                 <Text style={styles.activeSubTitle}>{sub.planId?.name}</Text>
-                <Text style={styles.activeSubText}>Status: <Text style={{ color: '#22c55e', textTransform: 'uppercase' }}>{sub.status}</Text></Text>
+                <Text style={styles.activeSubText}>Status: <Text style={{ color: '#00ffff', textTransform: 'uppercase' }}>{sub.status}</Text></Text>
                 <Text style={styles.activeSubText}>Next Delivery: {new Date(sub.nextDeliveryAt).toLocaleDateString()}</Text>
              </View>
           ))}
@@ -72,59 +72,60 @@ export default function StudioSubscriptions() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#CC0000', // Studio Deep Red
+    backgroundColor: '#131313', // Deep Matte Black (Studio mode)
   },
   center: {
     justifyContent: 'center',
     alignItems: 'center',
   },
   scrollContent: {
-    padding: 24,
+    padding: 24, // margin-desktop scale
     paddingBottom: 40,
   },
   header: {
-    marginBottom: 32,
+    marginBottom: 40,
     alignItems: 'center',
   },
   title: {
-    fontSize: 32,
-    fontWeight: '900',
-    color: '#FFD400',
+    fontSize: 32, // headline-lg
+    fontWeight: '700',
+    color: '#d4af37', // Gold
     textTransform: 'uppercase',
-    letterSpacing: 2,
+    letterSpacing: -0.5,
     marginBottom: 8,
   },
   subtitle: {
-    fontSize: 14,
-    color: '#ffffff',
-    fontWeight: '500',
+    fontSize: 16,
+    color: '#d0c5af',
+    fontWeight: '400',
   },
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#ffffff',
-    marginBottom: 16,
-    letterSpacing: 1,
+    fontSize: 20, // title-sm
+    fontWeight: '700',
+    color: '#e5e2e1', // on-surface
+    marginBottom: 20,
+    letterSpacing: 0,
   },
   mySubsSection: {
-    marginBottom: 32,
+    marginBottom: 40, // section-gap
   },
   activeSubCard: {
-    backgroundColor: '#1E6FBF20',
+    backgroundColor: 'rgba(0, 71, 171, 0.1)', // Ocean blue tint
     borderWidth: 1,
-    borderColor: '#1E6FBF',
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 12,
+    borderColor: '#0047ab',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
   },
   activeSubTitle: {
-    color: '#ffffff',
+    color: '#e5e2e1',
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: '700',
     marginBottom: 8,
   },
   activeSubText: {
-    color: '#d1d5db',
+    color: '#d0c5af',
     marginBottom: 4,
+    fontSize: 14,
   }
 });

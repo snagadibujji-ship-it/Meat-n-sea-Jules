@@ -10,7 +10,7 @@ export default function StudioHome() {
   if (isLoading) {
     return (
       <View style={[styles.container, styles.center]}>
-        <ActivityIndicator size="large" color="#FFD400" />
+        <ActivityIndicator size="large" color="#d4af37" />
       </View>
     );
   }
@@ -62,21 +62,22 @@ export default function StudioHome() {
   );
 }
 
+// Stitch Theme: Abyssal Gold (Studio Mode)
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#CC0000', // Deep Red background
+    backgroundColor: '#131313', // surface background
   },
   center: {
     justifyContent: 'center',
     alignItems: 'center',
   },
   scrollContent: {
-    padding: 24,
-    paddingBottom: 40,
+    padding: 24, // gutter-desktop equiv
+    paddingBottom: 80, // section-gap-desktop
   },
   errorText: {
-    color: '#ffffff',
+    color: '#ffb4ab', // error color
     fontSize: 16,
   },
   heroSection: {
@@ -84,38 +85,37 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    fontSize: 32,
-    fontWeight: '900',
-    color: '#FFD400',
+    fontSize: 32, // headline-lg
+    fontWeight: '700',
+    color: '#d4af37', // primary
     marginBottom: 8,
     textTransform: 'uppercase',
-    letterSpacing: 2,
+    letterSpacing: -0.5,
   },
   subtitle: {
-    fontSize: 14,
-    color: '#ffffff',
-    fontWeight: '500',
-    letterSpacing: 1,
+    fontSize: 16,
+    color: '#d0c5af', // on-surface-variant
+    fontWeight: '400',
     textAlign: 'center',
   },
   collectionSection: {
     marginBottom: 40,
   },
   collectionHeader: {
-    marginBottom: 16,
+    marginBottom: 20,
   },
   collectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#ffffff',
-    letterSpacing: 1,
+    fontSize: 24, // headline-md
+    fontWeight: '600',
+    color: '#e5e2e1', // on-surface
+    letterSpacing: 0,
   },
   collectionSubtitle: {
     fontSize: 14,
-    color: '#FFD400',
+    color: '#d4af37', // primary
     marginTop: 4,
   },
   productList: {
-    paddingRight: 24, // allows scrolling past the last item comfortably
+    paddingRight: 24,
   }
 });

@@ -1,38 +1,76 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0A0F1D;
-  --foreground: #ffffff;
+  /* Oceanic Premium Commerce (Default/Bazaar - Light Mode) */
+  --background: #f7f9fd;
+  --foreground: #191c1f;
+  --surface: #ffffff;
+  --surface-low: #f2f4f8;
+  --primary: #003366;
+  --primary-light: #799dd6;
+  --secondary: #006875;
+  --accent-coral: #FF6B35;
+  --accent-teal: #10B981;
+  --ice-border: #EBEBEB;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Deep Sea Premium (Dark Mode fallback) */
+    --background: #000055;
+    --foreground: #e0e0ff;
+    --surface: #070a61;
+    --surface-low: #0d1164;
+    --primary: #94ccff;
+    --primary-light: #0077b6;
+    --secondary: #4cd6fb;
+    --accent-coral: #FF6B35;
+    --accent-teal: #2ECC71;
+    --ice-border: #404850;
+  }
+}
+
+/* Dual-Mode Specific Overrides */
+:root[data-mode="bazaar"] {
+  --background: #f7f9fd;
+  --foreground: #191c1f;
+  --surface: #ffffff;
+  --primary: #003366;
+  --accent-coral: #FF6B35;
+  --ice-border: #EBEBEB;
+}
+
+:root[data-mode="studio"] {
+  /* Abyssal Gold (Studio Mode) */
+  --background: #131313;
+  --foreground: #e5e2e1;
+  --surface: #201f1f;
+  --surface-low: #1c1b1b;
+  --primary: #d4af37;
+  --primary-light: #f2ca50;
+  --secondary: #0047ab;
+  --accent-coral: #c41e3a;
+  --ice-border: #4d4635;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0A0F1D;
-    --foreground: #ffffff;
-  }
+  --color-surface: var(--surface);
+  --color-surface-low: var(--surface-low);
+  --color-primary: var(--primary);
+  --color-primary-light: var(--primary-light);
+  --color-secondary: var(--secondary);
+  --color-accent-coral: var(--accent-coral);
+  --color-accent-teal: var(--accent-teal);
+  --color-ice-border: var(--ice-border);
+  --font-sans: 'Inter', sans-serif;
+  --font-display: 'Poppins', sans-serif;
+  --font-serif: 'Playfair Display', serif;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
-}
-
-/* Theme Switching Utilities based on Data attributes */
-:root[data-mode="bazaar"] {
-  --color-bazaar-bg: #FFF7ED;
-  --color-bazaar-primary: #F97316;
-}
-
-:root[data-mode="studio"] {
-  --color-studio-bg: #CC0000;
-  --color-studio-primary: #FFD400;
-  --color-studio-highlight: #1E6FBF;
+  font-family: var(--font-sans);
 }

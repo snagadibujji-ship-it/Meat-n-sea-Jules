@@ -3,9 +3,6 @@ import Vendor from '../models/Vendor';
 import Product from '../models/Product';
 import Order from '../models/Order';
 import User from '../models/User';
-import Coupon from '../models/Coupon';
-import Ledger from '../models/Ledger';
-import { getIO } from '../socket';
 
 // =========================================================================
 // GEO-MATH CONTROLLER: Find nearby open vendors
@@ -13,7 +10,7 @@ import { getIO } from '../socket';
 // =========================================================================
 export const getNearbyVendors = async (req: Request, res: Response) => {
   try {
-    const { lng, lat, maxDistance = 5000, mode = 'bazaar' } = req.query; // maxDistance in meters (5km default)
+    const { lng, lat, maxDistance = 5000 } = req.query; // maxDistance in meters (5km default)
 
     if (!lng || !lat) {
       return res.status(400).json({ error: 'Longitude and latitude are required' });
@@ -33,7 +30,6 @@ export const getNearbyVendors = async (req: Request, res: Response) => {
           maxDistance: parseInt(maxDistance as string),
           spherical: true,
           query: {
-            isMnsStudio: mode === 'studio',
             isOpen: true,
             $or: [
               { 'businessHours': { $exists: false } },
@@ -155,9 +151,6 @@ export const advanceOrderStatus = async (req: Request, res: Response) => {
 
     order.updateStatus(newStatus); // This triggers our custom schema method
     await order.save();
-    const io = getIO();
-    io.to(`order_${orderId}`).emit('status_change', { newStatus });
-
 
     res.json(order);
   } catch (error) {
@@ -166,7 +159,7 @@ export const advanceOrderStatus = async (req: Request, res: Response) => {
 };
 
 // =========================================================================
-// SPAM PROTECTION & CHECKOUT: Place order check
+// SPAM PROTECTION: Place order check
 // =========================================================================
 export const placeOrder = async (req: Request, res: Response) => {
   try {
@@ -184,7 +177,7 @@ export const placeOrder = async (req: Request, res: Response) => {
         });
     }
 
-    const { vendorId, userLocation, customerNote, couponCode, items } = req.body; // userLocation expects { lng: number, lat: number }
+    const { vendorId, userLocation, customerNote } = req.body; // userLocation expects { lng: number, lat: number }
     if (!vendorId || !userLocation) {
         return res.status(400).json({ error: 'vendorId and userLocation are required' });
     }
@@ -221,130 +214,8 @@ export const placeOrder = async (req: Request, res: Response) => {
         return res.status(403).json({ error: `Out of delivery range. Vendor only serves within ${vendor.serviceRadiusKm}km.` });
     }
 
-    // Ledger Math: Calculate Subtotal natively in Paise
-    let subtotalPaise = 0;
-    if (items && items.length > 0) {
-      for (const item of items) {
-        const product = await Product.findById(item.productId);
-        if (!product || product.isOutOfStock) {
-           return res.status(400).json({ error: `Product ${item.productId} is out of stock or invalid` });
-        }
-        subtotalPaise += product.pricePaise * item.quantity;
-      }
-    } else {
-      // Demo fallback if items aren't strictly passed
-      subtotalPaise = 50000; // ₹500
-    }
-
-    let discountPaise = 0;
-
-    if (couponCode) {
-      const coupon = await Coupon.findOne({
-        code: couponCode.toUpperCase(),
-        isActive: true,
-        expiresAt: { $gt: new Date() }
-      });
-
-      if (coupon) {
-        // Calculate discount safely in integers
-        const calculatedDiscount = Math.floor((subtotalPaise * coupon.discountPercentage) / 100);
-        discountPaise = Math.min(calculatedDiscount, coupon.maxDiscountPaise);
-      }
-    }
-
-    const finalTotalPaise = subtotalPaise - discountPaise;
-
-    // Platform Commission (e.g., 10%)
-    const platformFeePaise = Math.floor((subtotalPaise * 10) / 100);
-
-    // Create Order
-    // Generate OTP for Studio Orders
-    const isStudio = req.body.sourceMode === 'studio';
-    const deliveryOtp = isStudio ? Math.floor(1000 + Math.random() * 9000).toString() : undefined;
-    const order = await Order.create({
-      customerId: userId,
-      vendorId: vendor._id,
-      totalAmountPaise: finalTotalPaise,
-      paymentMethod: req.body.paymentMethod || 'online',
-      sourceMode: req.body.sourceMode || 'bazaar',
-      deliveryTier: req.body.deliveryTier || 'standard',
-      deliveryOtp,
-      customerNote
-    });
-
-    // Create Ledger Entry
-    // Emit Real-Time Vendor Alert
-    const io = getIO();
-    io.to(`vendor_${vendor._id}`).emit('new_order', { orderId: order._id, totalAmountPaise: finalTotalPaise });
-
-    await Ledger.create({
-      orderId: order._id,
-      totalAmountPaise: finalTotalPaise,
-      paymentMethod: order.paymentMethod,
-      platformFeePaise,
-      discountPaise,
-    });
-
-    res.status(201).json({ message: 'Order created successfully', order, discountPaise, finalTotalPaise, platformFeePaise });
-  } catch (error) {
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-};
-
-// =========================================================================
-// PRODUCT CONTROLLER: Get products by vendor and mode
-// =========================================================================
-export const getProducts = async (req: Request, res: Response) => {
-  try {
-    const { vendorId, mode = 'bazaar' } = req.query;
-
-    if (!vendorId) {
-      return res.status(400).json({ error: 'Vendor ID is required' });
-    }
-
-    // Filter dynamically so studio requests only pull products where supportedMode is 'studio' or 'both'
-    const query: any = { vendorId };
-
-    if (mode === 'studio') {
-      query.supportedMode = { $in: ['studio', 'both'] };
-    }
-
-    const products = await Product.find(query);
-    res.json(products);
-  } catch (error) {
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-};
-
-// =========================================================================
-// ORDER COMPLETION CONTROLLER (Rider flow with OTP gate)
-// =========================================================================
-export const completeOrderDelivery = async (req: Request, res: Response) => {
-  try {
-    const { orderId } = req.params;
-    const { otp, proofOfDeliveryUrl } = req.body;
-
-    const order = await Order.findById(orderId);
-    if (!order) return res.status(404).json({ error: 'Order not found' });
-
-    if (order.sourceMode === 'studio') {
-        if (!proofOfDeliveryUrl) {
-             return res.status(400).json({ error: 'Proof of Delivery photo is strictly mandatory for Studio orders.' });
-        }
-        if (!otp || otp !== order.deliveryOtp) {
-            return res.status(400).json({ error: 'Invalid Delivery OTP.' });
-        }
-    }
-
-    // Validated, mark complete
-    order.proofOfDeliveryUrl = proofOfDeliveryUrl;
-    order.updateStatus('delivered');
-    await order.save();
-
-    const io = getIO();
-    io.to(`order_${orderId}`).emit('status_change', { newStatus: 'delivered' });
-
-    res.json({ message: 'Delivery Completed' });
+    // Proceed with atomic order creation logic here...
+    res.status(201).json({ message: 'Order created successfully' });
   } catch (error) {
     res.status(500).json({ error: 'Internal Server Error' });
   }

@@ -2,9 +2,6 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IVendor extends Document {
   name: string;
-  bannerUrl?: string;
-  avatarUrl?: string;
-  description?: string;
   phone: string;
   location: {
     type: 'Point';
@@ -14,8 +11,6 @@ export interface IVendor extends Document {
   status: 'open' | 'busy' | 'closed';
   serviceRadiusKm: number;
   fssaiNumber?: string;
-  isMnsStudio: boolean;
-  studioTier?: string;
   businessHours?: {
     openTime: string;
     closeTime: string;
@@ -27,9 +22,6 @@ export interface IVendor extends Document {
 const VendorSchema: Schema = new Schema(
   {
     name: { type: String, required: true },
-    bannerUrl: { type: String },
-    avatarUrl: { type: String },
-    description: { type: String },
     phone: { type: String, required: true },
     location: {
       type: { type: String, enum: ['Point'], required: true },
@@ -39,8 +31,6 @@ const VendorSchema: Schema = new Schema(
     status: { type: String, enum: ['open', 'busy', 'closed'], default: 'open' },
     serviceRadiusKm: { type: Number, default: 5 }, // Default radius for delivery
     fssaiNumber: { type: String },
-    isMnsStudio: { type: Boolean, default: false },
-    studioTier: { type: String, default: null },
     businessHours: {
       openTime: { type: String },
       closeTime: { type: String },
@@ -52,5 +42,4 @@ const VendorSchema: Schema = new Schema(
 // MongoDB Native 2dsphere index for zero-cost native Geo-Math aggregations
 VendorSchema.index({ location: '2dsphere' });
 
-VendorSchema.index({ name: 'text', description: 'text' });
 export default mongoose.model<IVendor>('Vendor', VendorSchema);

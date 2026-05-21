@@ -3,15 +3,9 @@ import mongoose, { Schema, Document } from 'mongoose';
 export interface IProduct extends Document {
   vendorId: mongoose.Types.ObjectId;
   name: string;
-  imageUrl?: string;
-  category?: string;
   pricePaise: number; // Stored in integer paise to avoid float errors
   stockQuantity: number;
   isOutOfStock: boolean;
-  supportedMode: 'bazaar' | 'studio' | 'both';
-  studioDescription?: string;
-  originStory?: string;
-  freshnessHours?: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -20,15 +14,9 @@ const ProductSchema: Schema = new Schema(
   {
     vendorId: { type: Schema.Types.ObjectId, ref: 'Vendor', required: true },
     name: { type: String, required: true },
-    imageUrl: { type: String },
-    category: { type: String },
     pricePaise: { type: Number, required: true },
     stockQuantity: { type: Number, required: true, default: 0 },
     isOutOfStock: { type: Boolean, required: true, default: false },
-    supportedMode: { type: String, enum: ['bazaar', 'studio', 'both'], default: 'bazaar' },
-    studioDescription: { type: String },
-    originStory: { type: String },
-    freshnessHours: { type: Number },
   },
   { timestamps: true }
 );
@@ -61,5 +49,4 @@ ProductSchema.pre('findOneAndUpdate', function (next) {
   next();
 });
 
-ProductSchema.index({ name: 'text', category: 'text' });
 export default mongoose.model<IProduct>('Product', ProductSchema);

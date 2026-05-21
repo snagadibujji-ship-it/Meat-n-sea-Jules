@@ -1,28 +1,31 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View } from 'react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useAppStore } from 'shared';
-import ModeSelection from './screens/ModeSelection';
-import Home from './screens/Home';
+import OrderTracking from './screens/OrderTracking';
+
+// Note: Using a mock order here just for integration testing purposes.
+// In production, React Navigation would provide the Order ID.
+const mockOrder = {
+  id: '123',
+  customerId: 'cust-123',
+  vendorId: 'vend-123',
+  totalAmountPaise: 50000,
+  paymentMethod: 'online',
+  currentStatus: 'preparing',
+  statusTimeline: [
+    { status: 'pending', timestamp: new Date(Date.now() - 10 * 60000).toISOString() },
+    { status: 'accepted', timestamp: new Date(Date.now() - 5 * 60000).toISOString() },
+    { status: 'preparing', timestamp: new Date().toISOString() },
+  ]
+} as any;
 
 const queryClient = new QueryClient();
-
-// Wrap the logic in a component to use hooks
-function MainApp() {
-  const { hasSeenOnboarding } = useAppStore();
-
-  if (!hasSeenOnboarding) {
-    return <ModeSelection />;
-  }
-
-  return <Home />;
-}
 
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <View style={styles.container}>
-        <MainApp />
+        <OrderTracking order={mockOrder} />
         <StatusBar style="auto" />
       </View>
     </QueryClientProvider>

@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useAdminDailyReport, useAnalyticsSummary, useSocket } from 'shared';
+import React from 'react';
+import { useAdminDailyReport, displayPrice } from 'shared';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const queryClient = new QueryClient();
 
 export default function AppWrapper() {
+    // Suppress Next.js static prerender errors by delaying child render to client-side
     const [mounted, setMounted] = React.useState(false);
     React.useEffect(() => setMounted(true), []);
 
@@ -20,258 +21,36 @@ export default function AppWrapper() {
 }
 
 function AdminDashboard() {
-  const { data, isLoading } = useAdminDailyReport();
-  const { data: analytics, isLoading: analyticsLoading } = useAnalyticsSummary();
+  const { data, isLoading, error } = useAdminDailyReport();
 
-  const [slaBreaches, setSlaBreaches] = useState<any[]>([]);
-
-  // We reuse the vendor socket or a generic admin room
-  // Note: the backend emits to 'admin' room
-  const socket = useSocket('admin', 'global');
-
-  useEffect(() => {
-    if (!socket) return;
-
-    socket.on('sla_breach', (payload: any) => {
-        // Play an alarm sound here in a real app
-        setSlaBreaches(prev => [...prev, payload]);
-    });
-
-    return () => {
-        socket.off('sla_breach');
-    };
-  }, [socket]);
-
-  const [couponCode, setCouponCode] = useState('');
-  const [discountPercent, setDiscountPercent] = useState('10');
-  const [maxDiscount, setMaxDiscount] = useState('50');
-
-  // Freshness State
-  const [catchTime, setCatchTime] = useState('');
-  const [harbourArrivalTime, setHarbourArrivalTime] = useState('');
-  const [processedTime, setProcessedTime] = useState('');
-
-  // Collection State
-  const [colTitle, setColTitle] = useState('');
-  const [colSubtitle, setColSubtitle] = useState('');
-  const [colSlug, setColSlug] = useState('');
-
-  // Sub Plan State
-  const [planName, setPlanName] = useState('');
-  const [planDesc, setPlanDesc] = useState('');
-  const [planPrice, setPlanPrice] = useState('');
-
-  const handleCreateCoupon = () => {
-    alert(`Created coupon ${couponCode} for ${discountPercent}% off (max ₹${maxDiscount})`);
-    setCouponCode('');
-  };
-
-  const handleUpdateFreshness = async () => {
-    alert('Freshness Board Updated!');
-  };
-
-  const handleCreateCollection = async () => {
-     alert(`Collection ${colTitle} created!`);
-     setColTitle(''); setColSubtitle(''); setColSlug('');
-  };
-
-  const handleCreatePlan = async () => {
-      alert(`Subscription Plan ${planName} created!`);
-      setPlanName(''); setPlanDesc(''); setPlanPrice('');
-  };
+  if (isLoading) return <div className="p-8">Loading metrics...</div>;
+  if (error) return <div className="p-8 text-red-500">Failed to load admin report</div>;
 
   return (
-    <div className="p-8 max-w-6xl mx-auto space-y-8 bg-[#0A0F1D] min-h-screen text-white">
-      <h1 className="text-4xl font-black text-[#FFD400]">Platform Command Center</h1>
+    <div className="p-8 max-w-4xl mx-auto space-y-8">
+      <h1 className="text-3xl font-bold">Admin Analytics Dashboard</h1>
 
-      {slaBreaches.length > 0 && (
-          <div className="p-6 bg-[#CC0000] border-4 border-white shadow-[0_0_20px_#CC0000] rounded-xl animate-pulse">
-              <h2 className="text-3xl font-black text-white uppercase tracking-widest mb-2">🚨 SLA BREACH DETECTED</h2>
-              <p className="text-xl font-bold text-[#FFD400]">
-                  {slaBreaches.length} Studio orders have been pending for > 5 minutes! Immediate dispatch action required.
-              </p>
-          </div>
-      )}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="p-6 bg-blue-50 border border-blue-100 rounded-xl shadow-sm">
+          <h2 className="text-sm font-semibold text-blue-800 uppercase tracking-wider mb-2">Total Orders (Today)</h2>
+          <p className="text-4xl font-bold text-blue-900">{data?.totalOrders || 0}</p>
+        </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="p-6 bg-[#171f33] shadow-lg rounded-xl border border-gray-800">
-          <h2 className="text-gray-400 font-bold mb-2">Daily Revenue</h2>
-          <p className="text-3xl font-black text-white">
-            {isLoading ? '...' : `₹${((data?.totalRevenuePaise || 0) / 100).toFixed(2)}`}
-          </p>
+        <div className="p-6 bg-green-50 border border-green-100 rounded-xl shadow-sm">
+          <h2 className="text-sm font-semibold text-green-800 uppercase tracking-wider mb-2">Gross Revenue</h2>
+          <p className="text-4xl font-bold text-green-900">₹{displayPrice(data?.grossRevenuePaise || 0)}</p>
         </div>
-        <div className="p-6 bg-[#171f33] shadow-lg rounded-xl border border-gray-800">
-          <h2 className="text-gray-400 font-bold mb-2">Platform Comm. (10%)</h2>
-          <p className="text-3xl font-black text-[#FFD400]">
-            {isLoading ? '...' : `₹${(((data?.totalRevenuePaise || 0) * 0.1) / 100).toFixed(2)}`}
-          </p>
-        </div>
-        <div className="p-6 bg-[#171f33] shadow-lg rounded-xl border border-gray-800">
-          <h2 className="text-gray-400 font-bold mb-2">Active Orders</h2>
-          <p className="text-3xl font-black text-white">
-            {isLoading ? '...' : data?.totalOrders}
-          </p>
-        </div>
-        <div className="p-6 bg-[#171f33] shadow-lg rounded-xl border border-gray-800">
-          <h2 className="text-gray-400 font-bold mb-2">Active Subs</h2>
-          <p className="text-3xl font-black text-[#CC0000]">
-            142
-          </p>
+
+        <div className="p-6 bg-purple-50 border border-purple-100 rounded-xl shadow-sm">
+          <h2 className="text-sm font-semibold text-purple-800 uppercase tracking-wider mb-2">Platform Fee (10%)</h2>
+          <p className="text-4xl font-bold text-purple-900">₹{displayPrice(data?.platformFeePaise || 0)}</p>
         </div>
       </div>
 
-      {/* Analytics Terminal */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
-        <div className="p-8 bg-[#171f33] shadow-lg rounded-xl border border-gray-800">
-            <h2 className="text-2xl font-bold mb-6 text-[#FFD400]">Mode Analytics</h2>
-
-            <div className="space-y-4">
-                <div className="flex justify-between items-center p-4 bg-[#0A0F1D] rounded-lg border border-gray-700">
-                    <span className="text-gray-400 font-bold">Total Mode Switches</span>
-                    <span className="text-2xl font-black text-white">{analyticsLoading ? '...' : analytics?.totalSwitches || 0}</span>
-                </div>
-                <div className="flex justify-between items-center p-4 bg-[#0A0F1D] rounded-lg border border-gray-700">
-                    <span className="text-gray-400 font-bold">Studio Home Views</span>
-                    <span className="text-2xl font-black text-[#CC0000]">{analyticsLoading ? '...' : analytics?.studioViews || 0}</span>
-                </div>
-                <div className="flex justify-between items-center p-4 bg-[#0A0F1D] rounded-lg border border-gray-700">
-                    <span className="text-gray-400 font-bold">Conversion to Sub (Est.)</span>
-                    <span className="text-2xl font-black text-[#22c55e]">14.2%</span>
-                </div>
-            </div>
-        </div>
+      <div className="p-6 bg-gray-50 border border-gray-200 rounded-xl shadow-sm mt-8">
+          <h2 className="text-lg font-semibold text-gray-800 mb-2">Top Performing Vendor</h2>
+          <p className="text-gray-600 font-mono">{data?.topVendorId ? data.topVendorId : 'No data yet today'}</p>
       </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
-          {/* Freshness Board */}
-          <div className="p-8 bg-[#171f33] shadow-lg rounded-xl border border-gray-800">
-            <h2 className="text-2xl font-bold mb-6 text-[#1E6FBF]">Studio Freshness Board</h2>
-
-            <div className="space-y-4">
-                <div>
-                    <label className="block text-gray-400 mb-2 font-bold">Catch Time</label>
-                    <input
-                        type="datetime-local"
-                        value={catchTime}
-                        onChange={(e) => setCatchTime(e.target.value)}
-                        className="w-full p-3 bg-[#0A0F1D] border border-gray-700 rounded-lg text-white"
-                    />
-                </div>
-                <div>
-                    <label className="block text-gray-400 mb-2 font-bold">Harbour Arrival Time</label>
-                    <input
-                        type="datetime-local"
-                        value={harbourArrivalTime}
-                        onChange={(e) => setHarbourArrivalTime(e.target.value)}
-                        className="w-full p-3 bg-[#0A0F1D] border border-gray-700 rounded-lg text-white"
-                    />
-                </div>
-                <div>
-                    <label className="block text-gray-400 mb-2 font-bold">Processed Time</label>
-                    <input
-                        type="datetime-local"
-                        value={processedTime}
-                        onChange={(e) => setProcessedTime(e.target.value)}
-                        className="w-full p-3 bg-[#0A0F1D] border border-gray-700 rounded-lg text-white"
-                    />
-                </div>
-                <button
-                    onClick={handleUpdateFreshness}
-                    className="w-full mt-4 bg-[#CC0000] text-white font-bold py-3 px-8 rounded-lg hover:bg-red-700 transition-colors"
-                >
-                    Update Live Freshness
-                </button>
-            </div>
-          </div>
-
-          {/* Subscription Manager */}
-          <div className="p-8 bg-[#171f33] shadow-lg rounded-xl border border-gray-800">
-            <h2 className="text-2xl font-bold mb-6 text-[#1E6FBF]">Subscription Manager</h2>
-
-            <div className="space-y-4">
-                <div>
-                    <label className="block text-gray-400 mb-2 font-bold">Plan Name</label>
-                    <input
-                        type="text"
-                        value={planName}
-                        onChange={(e) => setPlanName(e.target.value)}
-                        placeholder="e.g. Weekly Atlantic Salmon"
-                        className="w-full p-3 bg-[#0A0F1D] border border-gray-700 rounded-lg text-white"
-                    />
-                </div>
-                <div>
-                    <label className="block text-gray-400 mb-2 font-bold">Description</label>
-                    <input
-                        type="text"
-                        value={planDesc}
-                        onChange={(e) => setPlanDesc(e.target.value)}
-                        placeholder="e.g. 1kg of premium salmon delivered weekly"
-                        className="w-full p-3 bg-[#0A0F1D] border border-gray-700 rounded-lg text-white"
-                    />
-                </div>
-                <div>
-                    <label className="block text-gray-400 mb-2 font-bold">Price (₹)</label>
-                    <input
-                        type="number"
-                        value={planPrice}
-                        onChange={(e) => setPlanPrice(e.target.value)}
-                        placeholder="e.g. 1500"
-                        className="w-full p-3 bg-[#0A0F1D] border border-gray-700 rounded-lg text-white"
-                    />
-                </div>
-                <button
-                    onClick={handleCreatePlan}
-                    className="w-full mt-4 bg-[#FFD400] text-black font-bold py-3 px-8 rounded-lg hover:bg-yellow-500 transition-colors"
-                >
-                    Create Studio Plan
-                </button>
-            </div>
-          </div>
-      </div>
-
-      {/* Coupon Manager */}
-      <div className="p-8 bg-[#171f33] shadow-lg rounded-xl border border-gray-800 mt-8">
-        <h2 className="text-2xl font-bold mb-6 text-[#1E6FBF]">Coupon Manager</h2>
-
-        <div className="flex flex-col md:flex-row gap-4 items-end">
-            <div className="flex-1">
-                <label className="block text-gray-400 mb-2 font-bold">Promo Code</label>
-                <input
-                    type="text"
-                    value={couponCode}
-                    onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                    placeholder="e.g. WELCOME10"
-                    className="w-full p-3 bg-[#0A0F1D] border border-gray-700 rounded-lg text-white font-bold"
-                />
-            </div>
-            <div className="w-32">
-                <label className="block text-gray-400 mb-2 font-bold">% Off</label>
-                <input
-                    type="number"
-                    value={discountPercent}
-                    onChange={(e) => setDiscountPercent(e.target.value)}
-                    className="w-full p-3 bg-[#0A0F1D] border border-gray-700 rounded-lg text-white"
-                />
-            </div>
-            <div className="w-48">
-                <label className="block text-gray-400 mb-2 font-bold">Max Discount (₹)</label>
-                <input
-                    type="number"
-                    value={maxDiscount}
-                    onChange={(e) => setMaxDiscount(e.target.value)}
-                    className="w-full p-3 bg-[#0A0F1D] border border-gray-700 rounded-lg text-white"
-                />
-            </div>
-            <button
-                onClick={handleCreateCoupon}
-                className="bg-[#1E6FBF] text-white font-bold py-3 px-8 rounded-lg hover:bg-blue-600 transition-colors"
-            >
-                Generate
-            </button>
-        </div>
-      </div>
-
     </div>
   );
 }

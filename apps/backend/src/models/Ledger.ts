@@ -6,8 +6,6 @@ export interface ILedger extends Document {
   totalAmountPaise: number;
   paymentMethod: 'cod' | 'online';
   cashCollectedBy: 'platform' | 'rider';
-  platformFeePaise: number;
-  discountPaise?: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -18,8 +16,6 @@ const LedgerSchema: Schema = new Schema(
     totalAmountPaise: { type: Number, required: true },
     paymentMethod: { type: String, enum: ['cod', 'online'], required: true },
     cashCollectedBy: { type: String, enum: ['platform', 'rider'], required: true, default: 'platform' },
-    platformFeePaise: { type: Number, required: true, default: 0 },
-    discountPaise: { type: Number, default: 0 },
   },
   { timestamps: true }
 );
