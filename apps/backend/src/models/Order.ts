@@ -11,6 +11,7 @@ export interface IOrder extends Document {
   partnerId?: mongoose.Types.ObjectId;
   offeredRiderId?: mongoose.Types.ObjectId; // Track active dispatch offer
   totalAmountPaise: number;
+  customerNote?: string;
   paymentMethod: 'cod' | 'online';
   currentStatus: string;
   statusTimeline: IStatusTimeline[];
@@ -26,6 +27,7 @@ const OrderSchema: Schema = new Schema(
     partnerId: { type: Schema.Types.ObjectId, ref: 'Rider' }, // Final accepted Delivery rider
     offeredRiderId: { type: Schema.Types.ObjectId, ref: 'Rider' }, // Rider currently evaluating offer
     totalAmountPaise: { type: Number, required: true }, // Atomic integer tracking
+    customerNote: { type: String, maxlength: 250 },
     paymentMethod: { type: String, enum: ['cod', 'online'], required: true, default: 'online' },
     currentStatus: {
       type: String,

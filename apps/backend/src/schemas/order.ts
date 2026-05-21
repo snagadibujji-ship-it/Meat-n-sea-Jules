@@ -7,6 +7,7 @@ export const placeOrderSchema = z.object({
     lat: z.number().min(-90).max(90),
   }),
   // Optional but recommended for our setup
+  customerNote: z.string().max(250).optional(),
   items: z.array(z.object({
     productId: z.string(),
     quantity: z.number().int().positive(),

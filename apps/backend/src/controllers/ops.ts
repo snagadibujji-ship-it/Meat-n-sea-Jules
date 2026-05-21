@@ -16,6 +16,9 @@ export const getNearbyVendors = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Longitude and latitude are required' });
     }
 
+    const now = new Date();
+    const currentHourMin = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+
     const vendors = await Vendor.aggregate([
       {
         $geoNear: {
@@ -26,7 +29,16 @@ export const getNearbyVendors = async (req: Request, res: Response) => {
           distanceField: 'distance',
           maxDistance: parseInt(maxDistance as string),
           spherical: true,
-          query: { isOpen: true }, // Filter to only open vendors immediately
+          query: {
+            isOpen: true,
+            $or: [
+              { 'businessHours': { $exists: false } },
+              {
+                'businessHours.openTime': { $lte: currentHourMin },
+                'businessHours.closeTime': { $gte: currentHourMin }
+              }
+            ]
+          },
         },
       },
     ]);
@@ -165,7 +177,7 @@ export const placeOrder = async (req: Request, res: Response) => {
         });
     }
 
-    const { vendorId, userLocation } = req.body; // userLocation expects { lng: number, lat: number }
+    const { vendorId, userLocation, customerNote } = req.body; // userLocation expects { lng: number, lat: number }
     if (!vendorId || !userLocation) {
         return res.status(400).json({ error: 'vendorId and userLocation are required' });
     }

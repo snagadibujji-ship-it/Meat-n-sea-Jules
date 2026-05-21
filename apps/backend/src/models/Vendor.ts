@@ -10,6 +10,11 @@ export interface IVendor extends Document {
   isOpen: boolean;
   status: 'open' | 'busy' | 'closed';
   serviceRadiusKm: number;
+  fssaiNumber?: string;
+  businessHours?: {
+    openTime: string;
+    closeTime: string;
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -25,6 +30,11 @@ const VendorSchema: Schema = new Schema(
     isOpen: { type: Boolean, default: true },
     status: { type: String, enum: ['open', 'busy', 'closed'], default: 'open' },
     serviceRadiusKm: { type: Number, default: 5 }, // Default radius for delivery
+    fssaiNumber: { type: String },
+    businessHours: {
+      openTime: { type: String },
+      closeTime: { type: String },
+    },
   },
   { timestamps: true }
 );
