@@ -68,3 +68,80 @@ export const useOrderWhatsAppLink = (orderId: string) => useApiQuery<{ link: str
   `/orders/${orderId}/whatsapp-link`,
   { enabled: !!orderId }
 );
+
+// Add missing hooks from previous phases
+export const useSearch = (query: string, lat: string, lng: string, radiusKm?: string) => {
+  return useQuery({
+    queryKey: ['search', query, lat, lng, radiusKm],
+    queryFn: async () => {
+      const { data } = await apiClient.get('/search', {
+        params: { q: query, lat, lng, radiusKm }
+      });
+      return data;
+    },
+    enabled: !!query && !!lat && !!lng && query.trim().length > 0, // Only search if query exists
+    staleTime: 1000 * 60 * 5, // 5 minutes cache
+  });
+};
+
+export const useStudioHome = () => {
+  return useQuery({
+    queryKey: ['studioHome'],
+    queryFn: async () => {
+      const { data } = await apiClient.get('/studio/home');
+      return data;
+    },
+    staleTime: 1000 * 60 * 5, // 5 mins
+  });
+};
+
+export const useStudioPlans = () => {
+  return useQuery({
+    queryKey: ['studioPlans'],
+    queryFn: async () => {
+      const { data } = await apiClient.get('/studio/plans');
+      return data;
+    },
+    staleTime: 1000 * 60 * 60, // 1 hour
+  });
+};
+
+export const useMySubscriptions = () => {
+  return useQuery({
+    queryKey: ['mySubscriptions'],
+    queryFn: async () => {
+      const { data } = await apiClient.get('/studio/subscriptions/me');
+      return data;
+    },
+  });
+};
+
+export const useCreateSubscription = () => {
+  return useMutation({
+    mutationFn: async (payload: any) => {
+      const { data } = await apiClient.post('/studio/subscriptions', payload);
+      return data;
+    },
+    // We would invalidate queries here if we had queryClient in scope
+  });
+};
+
+export const useAnalyticsSummary = () => {
+  return useQuery({
+    queryKey: ['analyticsSummary'],
+    queryFn: async () => {
+      const { data } = await apiClient.get('/analytics/summary');
+      return data;
+    },
+    refetchInterval: 1000 * 60, // Refresh every minute
+  });
+};
+
+export const useLogEvent = () => {
+  return useMutation({
+    mutationFn: async (payload: { eventName: string; metaData?: Record<string, any> }) => {
+      const { data } = await apiClient.post('/analytics/event', payload);
+      return data;
+    },
+  });
+};
