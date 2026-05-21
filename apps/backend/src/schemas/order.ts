@@ -8,6 +8,7 @@ export const placeOrderSchema = z.object({
   }),
   // Optional but recommended for our setup
   customerNote: z.string().max(250).optional(),
+  couponCode: z.string().optional(),
   items: z.array(z.object({
     productId: z.string(),
     quantity: z.number().int().positive(),

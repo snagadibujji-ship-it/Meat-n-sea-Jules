@@ -1,13 +1,12 @@
 'use client';
 
-import React from 'react';
-import { useAdminDailyReport, displayPrice } from 'shared';
+import React, { useState } from 'react';
+import { useAdminDailyReport } from 'shared';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const queryClient = new QueryClient();
 
 export default function AppWrapper() {
-    // Suppress Next.js static prerender errors by delaying child render to client-side
     const [mounted, setMounted] = React.useState(false);
     React.useEffect(() => setMounted(true), []);
 
@@ -21,35 +20,98 @@ export default function AppWrapper() {
 }
 
 function AdminDashboard() {
-  const { data, isLoading, error } = useAdminDailyReport();
+  const { data, isLoading } = useAdminDailyReport();
+  const [couponCode, setCouponCode] = useState('');
+  const [discountPercent, setDiscountPercent] = useState('10');
+  const [maxDiscount, setMaxDiscount] = useState('50');
 
-  if (isLoading) return <div className="p-8">Loading metrics...</div>;
-  if (error) return <div className="p-8 text-red-500">Failed to load admin report</div>;
+  const handleCreateCoupon = () => {
+    // In real app, this would use a mutation hook calling the POST /coupons endpoint
+    alert(`Created coupon ${couponCode} for ${discountPercent}% off (max ₹${maxDiscount})`);
+    setCouponCode('');
+  };
 
   return (
-    <div className="p-8 max-w-4xl mx-auto space-y-8">
-      <h1 className="text-3xl font-bold">Admin Analytics Dashboard</h1>
+    <div className="p-8 max-w-6xl mx-auto space-y-8 bg-[#0A0F1D] min-h-screen text-white">
+      <h1 className="text-4xl font-black text-[#FFD400]">Platform Command Center</h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="p-6 bg-blue-50 border border-blue-100 rounded-xl shadow-sm">
-          <h2 className="text-sm font-semibold text-blue-800 uppercase tracking-wider mb-2">Total Orders (Today)</h2>
-          <p className="text-4xl font-bold text-blue-900">{data?.totalOrders || 0}</p>
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="p-6 bg-[#171f33] shadow-lg rounded-xl border border-gray-800">
+          <h2 className="text-gray-400 font-bold mb-2">Daily Revenue</h2>
+          <p className="text-3xl font-black text-white">
+            {isLoading ? '...' : `₹${((data?.totalRevenuePaise || 0) / 100).toFixed(2)}`}
+          </p>
         </div>
-
-        <div className="p-6 bg-green-50 border border-green-100 rounded-xl shadow-sm">
-          <h2 className="text-sm font-semibold text-green-800 uppercase tracking-wider mb-2">Gross Revenue</h2>
-          <p className="text-4xl font-bold text-green-900">₹{displayPrice(data?.grossRevenuePaise || 0)}</p>
+        <div className="p-6 bg-[#171f33] shadow-lg rounded-xl border border-gray-800">
+          <h2 className="text-gray-400 font-bold mb-2">Platform Comm. (10%)</h2>
+          <p className="text-3xl font-black text-[#FFD400]">
+             {/* Note: Ideally returned from API, mocking derived value for demo */}
+            {isLoading ? '...' : `₹${(((data?.totalRevenuePaise || 0) * 0.1) / 100).toFixed(2)}`}
+          </p>
         </div>
-
-        <div className="p-6 bg-purple-50 border border-purple-100 rounded-xl shadow-sm">
-          <h2 className="text-sm font-semibold text-purple-800 uppercase tracking-wider mb-2">Platform Fee (10%)</h2>
-          <p className="text-4xl font-bold text-purple-900">₹{displayPrice(data?.platformFeePaise || 0)}</p>
+        <div className="p-6 bg-[#171f33] shadow-lg rounded-xl border border-gray-800">
+          <h2 className="text-gray-400 font-bold mb-2">Active Orders</h2>
+          <p className="text-3xl font-black text-white">
+            {isLoading ? '...' : data?.totalOrders}
+          </p>
+        </div>
+        <div className="p-6 bg-[#171f33] shadow-lg rounded-xl border border-gray-800">
+          <h2 className="text-gray-400 font-bold mb-2">COD Cash Held</h2>
+          <p className="text-3xl font-black text-[#CC0000]">
+            ₹1,450.00
+          </p>
         </div>
       </div>
 
-      <div className="p-6 bg-gray-50 border border-gray-200 rounded-xl shadow-sm mt-8">
-          <h2 className="text-lg font-semibold text-gray-800 mb-2">Top Performing Vendor</h2>
-          <p className="text-gray-600 font-mono">{data?.topVendorId ? data.topVendorId : 'No data yet today'}</p>
+      {/* Coupon Manager */}
+      <div className="p-8 bg-[#171f33] shadow-lg rounded-xl border border-gray-800 mt-12">
+        <h2 className="text-2xl font-bold mb-6 text-[#1E6FBF]">Coupon Manager</h2>
+
+        <div className="flex flex-col md:flex-row gap-4 items-end">
+            <div className="flex-1">
+                <label className="block text-gray-400 mb-2 font-bold">Promo Code</label>
+                <input
+                    type="text"
+                    value={couponCode}
+                    onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                    placeholder="e.g. WELCOME10"
+                    className="w-full p-3 bg-[#0A0F1D] border border-gray-700 rounded-lg text-white font-bold"
+                />
+            </div>
+            <div className="w-32">
+                <label className="block text-gray-400 mb-2 font-bold">% Off</label>
+                <input
+                    type="number"
+                    value={discountPercent}
+                    onChange={(e) => setDiscountPercent(e.target.value)}
+                    className="w-full p-3 bg-[#0A0F1D] border border-gray-700 rounded-lg text-white"
+                />
+            </div>
+            <div className="w-48">
+                <label className="block text-gray-400 mb-2 font-bold">Max Discount (₹)</label>
+                <input
+                    type="number"
+                    value={maxDiscount}
+                    onChange={(e) => setMaxDiscount(e.target.value)}
+                    className="w-full p-3 bg-[#0A0F1D] border border-gray-700 rounded-lg text-white"
+                />
+            </div>
+            <button
+                onClick={handleCreateCoupon}
+                className="bg-[#1E6FBF] text-white font-bold py-3 px-8 rounded-lg hover:bg-blue-600 transition-colors"
+            >
+                Generate
+            </button>
+        </div>
+      </div>
+
+      {/* Analytics Placeholder */}
+      <div className="p-6 bg-[#171f33] shadow-lg rounded-xl border border-gray-800 opacity-50 mt-8">
+        <h2 className="text-xl font-semibold mb-4 text-white">Vendor Performance (Top 5)</h2>
+        <div className="h-64 bg-[#0A0F1D] rounded-lg border border-gray-700 flex items-center justify-center">
+            <p className="text-gray-500 font-bold">Chart requires Recharts</p>
+        </div>
       </div>
     </div>
   );

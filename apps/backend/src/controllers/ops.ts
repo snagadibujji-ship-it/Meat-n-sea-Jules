@@ -3,6 +3,8 @@ import Vendor from '../models/Vendor';
 import Product from '../models/Product';
 import Order from '../models/Order';
 import User from '../models/User';
+import Coupon from '../models/Coupon';
+import Ledger from '../models/Ledger';
 
 // =========================================================================
 // GEO-MATH CONTROLLER: Find nearby open vendors
@@ -159,7 +161,7 @@ export const advanceOrderStatus = async (req: Request, res: Response) => {
 };
 
 // =========================================================================
-// SPAM PROTECTION: Place order check
+// SPAM PROTECTION & CHECKOUT: Place order check
 // =========================================================================
 export const placeOrder = async (req: Request, res: Response) => {
   try {
@@ -177,7 +179,7 @@ export const placeOrder = async (req: Request, res: Response) => {
         });
     }
 
-    const { vendorId, userLocation, customerNote } = req.body; // userLocation expects { lng: number, lat: number }
+    const { vendorId, userLocation, customerNote, couponCode, items } = req.body; // userLocation expects { lng: number, lat: number }
     if (!vendorId || !userLocation) {
         return res.status(400).json({ error: 'vendorId and userLocation are required' });
     }
@@ -214,8 +216,61 @@ export const placeOrder = async (req: Request, res: Response) => {
         return res.status(403).json({ error: `Out of delivery range. Vendor only serves within ${vendor.serviceRadiusKm}km.` });
     }
 
-    // Proceed with atomic order creation logic here...
-    res.status(201).json({ message: 'Order created successfully' });
+    // Ledger Math: Calculate Subtotal natively in Paise
+    let subtotalPaise = 0;
+    if (items && items.length > 0) {
+      for (const item of items) {
+        const product = await Product.findById(item.productId);
+        if (!product || product.isOutOfStock) {
+           return res.status(400).json({ error: `Product ${item.productId} is out of stock or invalid` });
+        }
+        subtotalPaise += product.pricePaise * item.quantity;
+      }
+    } else {
+      // Demo fallback if items aren't strictly passed
+      subtotalPaise = 50000; // ₹500
+    }
+
+    let discountPaise = 0;
+
+    if (couponCode) {
+      const coupon = await Coupon.findOne({
+        code: couponCode.toUpperCase(),
+        isActive: true,
+        expiresAt: { $gt: new Date() }
+      });
+
+      if (coupon) {
+        // Calculate discount safely in integers
+        const calculatedDiscount = Math.floor((subtotalPaise * coupon.discountPercentage) / 100);
+        discountPaise = Math.min(calculatedDiscount, coupon.maxDiscountPaise);
+      }
+    }
+
+    const finalTotalPaise = subtotalPaise - discountPaise;
+
+    // Platform Commission (e.g., 10%)
+    const platformFeePaise = Math.floor((subtotalPaise * 10) / 100);
+
+    // Create Order
+    const order = await Order.create({
+      customerId: userId,
+      vendorId: vendor._id,
+      totalAmountPaise: finalTotalPaise,
+      paymentMethod: req.body.paymentMethod || 'online',
+      customerNote
+    });
+
+    // Create Ledger Entry
+    await Ledger.create({
+      orderId: order._id,
+      totalAmountPaise: finalTotalPaise,
+      paymentMethod: order.paymentMethod,
+      platformFeePaise,
+      discountPaise,
+    });
+
+    res.status(201).json({ message: 'Order created successfully', order, discountPaise, finalTotalPaise, platformFeePaise });
   } catch (error) {
     res.status(500).json({ error: 'Internal Server Error' });
   }

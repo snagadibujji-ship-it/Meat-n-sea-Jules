@@ -5,6 +5,10 @@ import { placeOrderSchema } from "../schemas/order";
 import { dispatchToNearestRider } from '../controllers/dispatch';
 import { requestOtp, verifyOtp } from "../controllers/auth";
 import { requestOtpSchema, verifyOtpSchema } from "../schemas/auth";
+import { addAddress, deleteAddress } from "../controllers/user";
+import { addAddressSchema } from "../schemas/user";
+import { createCoupon } from "../controllers/coupon";
+import { createCouponSchema } from "../schemas/coupon";
 import { globalSearch } from "../controllers/search";
 import { searchSchema } from "../schemas/search";
 import { getDailyReport } from '../controllers/admin';
@@ -31,3 +35,8 @@ router.post('/auth/otp/request', validateRequest(requestOtpSchema), requestOtp);
 router.post('/auth/otp/verify', validateRequest(verifyOtpSchema), verifyOtp);
 // Search Route
 router.get('/search', validateRequest(searchSchema), globalSearch);
+// User Routes
+router.post('/users/addresses', validateRequest(addAddressSchema), addAddress);
+router.delete('/users/addresses/:addressId', deleteAddress);
+// Coupon Routes
+router.post('/coupons', validateRequest(createCouponSchema), createCoupon);

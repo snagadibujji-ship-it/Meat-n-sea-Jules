@@ -8,6 +8,15 @@ export interface IUser extends Document {
   role: 'customer' | 'vendor' | 'partner' | 'admin';
   activeOrdersCount: number;
   maxActiveOrders: number; // Configurable limit to prevent prank floods
+  savedAddresses?: {
+    _id?: mongoose.Types.ObjectId;
+    label: string;
+    streetAddress: string;
+    location: {
+      type: 'Point';
+      coordinates: number[];
+    };
+  }[];
   createdAt: Date;
   updatedAt: Date;
   canPlaceOrder: () => Promise<boolean>;
@@ -20,6 +29,14 @@ const UserSchema: Schema = new Schema(
     role: { type: String, enum: ['customer', 'vendor', 'partner', 'admin'], default: 'customer' },
     activeOrdersCount: { type: Number, default: 0 },
     maxActiveOrders: { type: Number, default: 5 }, // Default limit is 5
+    savedAddresses: [{
+      label: { type: String, required: true },
+      streetAddress: { type: String, required: true },
+      location: {
+        type: { type: String, enum: ['Point'], required: true },
+        coordinates: { type: [Number], required: true },
+      }
+    }],
   },
   { timestamps: true }
 );
