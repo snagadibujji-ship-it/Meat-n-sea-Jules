@@ -1,16 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
-import { useSearch } from 'shared';
+import { View, Text, TextInput, StyleSheet, FlatList } from 'react-native';
+import { useSearch, useAppStore } from 'shared';
+import ModeSwitcher from '../components/ModeSwitcher';
+import BazaarHome from './BazaarHome';
+import StudioHome from './StudioHome';
 
 export default function Home() {
+  const { mode } = useAppStore();
   const [searchInput, setSearchInput] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
 
-  // Fixed coordinates for demo purposes (e.g., somewhere in India)
+  // Fixed coordinates for demo purposes
   const userLat = '17.3850';
   const userLng = '78.4867';
 
-  // 300ms Debounce implementation
+  // 300ms Debounce
   useEffect(() => {
     const timerId = setTimeout(() => {
       setDebouncedQuery(searchInput);
@@ -19,7 +23,7 @@ export default function Home() {
     return () => clearTimeout(timerId);
   }, [searchInput]);
 
-  const { data, isLoading, error } = useSearch(debouncedQuery, userLat, userLng);
+  const { data, isLoading } = useSearch(debouncedQuery, userLat, userLng);
 
   const renderVendor = ({ item }: { item: any }) => (
     <View style={styles.resultItem}>
@@ -43,24 +47,29 @@ export default function Home() {
     </View>
   );
 
+  // Dynamic Styles based on Mode
+  const isBazaar = mode === 'bazaar';
+  const headerBgColor = isBazaar ? '#F97316' : '#CC0000';
+  const headerBorderColor = isBazaar ? '#c2410c' : '#FFD400';
+  const pageBgColor = isBazaar ? '#FFF7ED' : '#0A0F1D';
+
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Meat n Sea</Text>
+    <View style={[styles.container, { backgroundColor: pageBgColor }]}>
+      <View style={[styles.header, { backgroundColor: headerBgColor, borderBottomColor: headerBorderColor }]}>
+        <ModeSwitcher />
+        <View style={styles.searchContainer}>
+          <TextInput
+            style={[styles.searchInput, isBazaar ? styles.searchInputBazaar : styles.searchInputStudio]}
+            placeholder="Search for fish, chicken, or stores..."
+            placeholderTextColor={isBazaar ? "#9ca3af" : "#6b7280"}
+            value={searchInput}
+            onChangeText={setSearchInput}
+          />
+          {isLoading && <Text style={styles.loadingText}>Searching...</Text>}
+        </View>
       </View>
 
-      <View style={styles.searchContainer}>
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search for fish, chicken, or stores..."
-          placeholderTextColor="#6b7280"
-          value={searchInput}
-          onChangeText={setSearchInput}
-        />
-        {isLoading && <Text style={styles.loadingText}>Searching...</Text>}
-      </View>
-
-      {debouncedQuery.length > 0 && data && (
+      {debouncedQuery.length > 0 && data ? (
         <View style={styles.resultsContainer}>
           <FlatList
             data={[
@@ -76,39 +85,39 @@ export default function Home() {
             }
           />
         </View>
+      ) : (
+        <View style={styles.contentContainer}>
+           {isBazaar ? <BazaarHome /> : <StudioHome />}
+        </View>
       )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#0A0F1D',
-  },
+  container: { flex: 1 },
   header: {
-    padding: 24,
+    padding: 16,
     paddingTop: 60,
-    backgroundColor: '#1E6FBF', // Brand Blue
     borderBottomWidth: 4,
-    borderBottomColor: '#FFD400', // Brand Yellow
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '900',
-    color: '#ffffff',
   },
   searchContainer: {
-    padding: 16,
-    backgroundColor: '#171f33',
+    marginTop: 8,
   },
   searchInput: {
-    backgroundColor: '#0A0F1D',
-    color: '#ffffff',
     borderRadius: 8,
     padding: 16,
     fontSize: 16,
     borderWidth: 1,
+  },
+  searchInputBazaar: {
+    backgroundColor: '#ffffff',
+    color: '#1f2937',
+    borderColor: '#e5e7eb',
+  },
+  searchInputStudio: {
+    backgroundColor: '#0A0F1D',
+    color: '#ffffff',
     borderColor: '#374151',
   },
   loadingText: {
@@ -120,39 +129,20 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
   },
+  contentContainer: {
+    flex: 1,
+  },
   resultItem: {
     backgroundColor: '#171f33',
     padding: 16,
     borderRadius: 8,
     marginBottom: 12,
     borderLeftWidth: 4,
-    borderLeftColor: '#CC0000', // Brand Red accent
+    borderLeftColor: '#CC0000',
   },
-  resultName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#ffffff',
-  },
-  resultDesc: {
-    fontSize: 14,
-    color: '#9ca3af',
-    marginTop: 4,
-  },
-  resultCategory: {
-    fontSize: 12,
-    color: '#FFD400',
-    marginTop: 4,
-    fontWeight: 'bold',
-  },
-  resultMeta: {
-    fontSize: 12,
-    color: '#6b7280',
-    marginTop: 8,
-  },
-  emptyText: {
-    color: '#9ca3af',
-    textAlign: 'center',
-    marginTop: 32,
-    fontSize: 16,
-  },
+  resultName: { fontSize: 18, fontWeight: 'bold', color: '#ffffff' },
+  resultDesc: { fontSize: 14, color: '#9ca3af', marginTop: 4 },
+  resultCategory: { fontSize: 12, color: '#FFD400', marginTop: 4, fontWeight: 'bold' },
+  resultMeta: { fontSize: 12, color: '#6b7280', marginTop: 8 },
+  emptyText: { color: '#9ca3af', textAlign: 'center', marginTop: 32, fontSize: 16 },
 });

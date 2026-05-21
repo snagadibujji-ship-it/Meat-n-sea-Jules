@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getNearbyVendors, toggleProductStock, advanceOrderStatus, placeOrder, getOrderWhatsAppLink, toggleVendorStatus } from '../controllers/ops';
+import { getNearbyVendors, getProducts, toggleProductStock, advanceOrderStatus, placeOrder, getOrderWhatsAppLink, toggleVendorStatus } from '../controllers/ops';
 import { validateRequest } from "../middlewares/validateRequest";
 import { placeOrderSchema } from "../schemas/order";
 import { dispatchToNearestRider } from '../controllers/dispatch';
@@ -18,6 +18,7 @@ const router = Router();
 
 // Ops Routes
 router.get('/vendors/nearby', getNearbyVendors);
+router.get('/products', getProducts);
 router.patch('/vendors/:vendorId/status', toggleVendorStatus);
 router.post('/products/:productId/toggle-stock', toggleProductStock);
 router.post('/orders/:orderId/advance', advanceOrderStatus);

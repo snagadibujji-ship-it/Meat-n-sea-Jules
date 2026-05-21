@@ -14,6 +14,8 @@ export interface IVendor extends Document {
   status: 'open' | 'busy' | 'closed';
   serviceRadiusKm: number;
   fssaiNumber?: string;
+  isMnsStudio: boolean;
+  studioTier?: string;
   businessHours?: {
     openTime: string;
     closeTime: string;
@@ -37,6 +39,8 @@ const VendorSchema: Schema = new Schema(
     status: { type: String, enum: ['open', 'busy', 'closed'], default: 'open' },
     serviceRadiusKm: { type: Number, default: 5 }, // Default radius for delivery
     fssaiNumber: { type: String },
+    isMnsStudio: { type: Boolean, default: false },
+    studioTier: { type: String, default: null },
     businessHours: {
       openTime: { type: String },
       closeTime: { type: String },

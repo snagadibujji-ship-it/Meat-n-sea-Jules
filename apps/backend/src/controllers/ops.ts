@@ -13,7 +13,7 @@ import { getIO } from '../socket';
 // =========================================================================
 export const getNearbyVendors = async (req: Request, res: Response) => {
   try {
-    const { lng, lat, maxDistance = 5000 } = req.query; // maxDistance in meters (5km default)
+    const { lng, lat, maxDistance = 5000, mode = 'bazaar' } = req.query; // maxDistance in meters (5km default)
 
     if (!lng || !lat) {
       return res.status(400).json({ error: 'Longitude and latitude are required' });
@@ -33,6 +33,7 @@ export const getNearbyVendors = async (req: Request, res: Response) => {
           maxDistance: parseInt(maxDistance as string),
           spherical: true,
           query: {
+            isMnsStudio: mode === 'studio',
             isOpen: true,
             $or: [
               { 'businessHours': { $exists: false } },
@@ -279,6 +280,31 @@ export const placeOrder = async (req: Request, res: Response) => {
     });
 
     res.status(201).json({ message: 'Order created successfully', order, discountPaise, finalTotalPaise, platformFeePaise });
+  } catch (error) {
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+// =========================================================================
+// PRODUCT CONTROLLER: Get products by vendor and mode
+// =========================================================================
+export const getProducts = async (req: Request, res: Response) => {
+  try {
+    const { vendorId, mode = 'bazaar' } = req.query;
+
+    if (!vendorId) {
+      return res.status(400).json({ error: 'Vendor ID is required' });
+    }
+
+    // Filter dynamically so studio requests only pull products where supportedMode is 'studio' or 'both'
+    const query: any = { vendorId };
+
+    if (mode === 'studio') {
+      query.supportedMode = { $in: ['studio', 'both'] };
+    }
+
+    const products = await Product.find(query);
+    res.json(products);
   } catch (error) {
     res.status(500).json({ error: 'Internal Server Error' });
   }

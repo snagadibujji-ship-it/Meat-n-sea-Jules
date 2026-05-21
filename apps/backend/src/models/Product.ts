@@ -8,6 +8,10 @@ export interface IProduct extends Document {
   pricePaise: number; // Stored in integer paise to avoid float errors
   stockQuantity: number;
   isOutOfStock: boolean;
+  supportedMode: 'bazaar' | 'studio' | 'both';
+  studioDescription?: string;
+  originStory?: string;
+  freshnessHours?: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -21,6 +25,10 @@ const ProductSchema: Schema = new Schema(
     pricePaise: { type: Number, required: true },
     stockQuantity: { type: Number, required: true, default: 0 },
     isOutOfStock: { type: Boolean, required: true, default: false },
+    supportedMode: { type: String, enum: ['bazaar', 'studio', 'both'], default: 'bazaar' },
+    studioDescription: { type: String },
+    originStory: { type: String },
+    freshnessHours: { type: Number },
   },
   { timestamps: true }
 );
