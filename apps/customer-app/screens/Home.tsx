@@ -5,6 +5,7 @@ import StudioSubscriptions from './StudioSubscriptions';
 import ModeSwitcher from '../components/ModeSwitcher';
 import BazaarHome from './BazaarHome';
 import StudioHome from './StudioHome';
+import StudioNudge from '../components/StudioNudge';
 
 export default function Home() {
   const { mode } = useAppStore();
@@ -58,6 +59,7 @@ export default function Home() {
     <View style={[styles.container, { backgroundColor: pageBgColor }]}>
       <View style={[styles.header, { backgroundColor: headerBgColor, borderBottomColor: headerBorderColor }]}>
         <ModeSwitcher />
+        <StudioNudge />
         <View style={styles.searchContainer}>
           <TextInput
             style={[styles.searchInput, isBazaar ? styles.searchInputBazaar : styles.searchInputStudio]}

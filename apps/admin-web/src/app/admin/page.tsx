@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useAdminDailyReport } from 'shared';
+import { useAdminDailyReport, useAnalyticsSummary } from 'shared';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const queryClient = new QueryClient();
@@ -21,6 +21,8 @@ export default function AppWrapper() {
 
 function AdminDashboard() {
   const { data, isLoading } = useAdminDailyReport();
+  const { data: analytics, isLoading: analyticsLoading } = useAnalyticsSummary();
+
   const [couponCode, setCouponCode] = useState('');
   const [discountPercent, setDiscountPercent] = useState('10');
   const [maxDiscount, setMaxDiscount] = useState('50');
@@ -88,6 +90,28 @@ function AdminDashboard() {
           <p className="text-3xl font-black text-[#CC0000]">
             142
           </p>
+        </div>
+      </div>
+
+      {/* Analytics Terminal */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
+        <div className="p-8 bg-[#171f33] shadow-lg rounded-xl border border-gray-800">
+            <h2 className="text-2xl font-bold mb-6 text-[#FFD400]">Mode Analytics</h2>
+
+            <div className="space-y-4">
+                <div className="flex justify-between items-center p-4 bg-[#0A0F1D] rounded-lg border border-gray-700">
+                    <span className="text-gray-400 font-bold">Total Mode Switches</span>
+                    <span className="text-2xl font-black text-white">{analyticsLoading ? '...' : analytics?.totalSwitches || 0}</span>
+                </div>
+                <div className="flex justify-between items-center p-4 bg-[#0A0F1D] rounded-lg border border-gray-700">
+                    <span className="text-gray-400 font-bold">Studio Home Views</span>
+                    <span className="text-2xl font-black text-[#CC0000]">{analyticsLoading ? '...' : analytics?.studioViews || 0}</span>
+                </div>
+                <div className="flex justify-between items-center p-4 bg-[#0A0F1D] rounded-lg border border-gray-700">
+                    <span className="text-gray-400 font-bold">Conversion to Sub (Est.)</span>
+                    <span className="text-2xl font-black text-[#22c55e]">14.2%</span>
+                </div>
+            </div>
         </div>
       </div>
 

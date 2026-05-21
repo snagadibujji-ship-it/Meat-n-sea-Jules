@@ -9,6 +9,8 @@ import { addAddress, deleteAddress } from "../controllers/user";
 import { addAddressSchema } from "../schemas/user";
 import { getCollections, getCollectionBySlug, getFreshness, getStudioHome, createCollection, updateFreshness } from "../controllers/studio";
 import { createCollectionSchema, updateFreshnessSchema } from "../schemas/studio";
+import { logEvent, getAnalyticsSummary } from "../controllers/analytics";
+import { createEventSchema } from "../schemas/analytics";
 import { getPlans, createSubscription, getMySubscription, updateSubscriptionStatus, createPlan } from "../controllers/subscription";
 import { createPlanSchema, createSubscriptionSchema, updateSubscriptionSchema } from "../schemas/subscription";
 import { createCoupon } from "../controllers/coupon";
@@ -61,3 +63,6 @@ router.post('/studio/plans', validateRequest(createPlanSchema), createPlan);
 router.post('/studio/subscriptions', validateRequest(createSubscriptionSchema), createSubscription);
 router.get('/studio/subscriptions/me', getMySubscription);
 router.patch('/studio/subscriptions/:id', validateRequest(updateSubscriptionSchema), updateSubscriptionStatus);
+// Analytics Routes
+router.post('/analytics/event', validateRequest(createEventSchema), logEvent);
+router.get('/analytics/summary', getAnalyticsSummary);

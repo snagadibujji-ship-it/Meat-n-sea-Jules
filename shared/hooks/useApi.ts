@@ -119,3 +119,24 @@ export const useCreateSubscription = () => {
     }
   });
 };
+
+// Analytics Hooks
+export const useLogEvent = () => {
+  return useMutation({
+    mutationFn: async (payload: { eventName: string; metaData?: Record<string, any> }) => {
+      const { data } = await apiClient.post('/analytics/event', payload);
+      return data;
+    },
+  });
+};
+
+export const useAnalyticsSummary = () => {
+  return useQuery({
+    queryKey: ['analyticsSummary'],
+    queryFn: async () => {
+      const { data } = await apiClient.get('/analytics/summary');
+      return data;
+    },
+    refetchInterval: 1000 * 60, // Refresh every minute
+  });
+};
