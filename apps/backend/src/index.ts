@@ -25,6 +25,8 @@ mongoose.connect(MONGO_URI)
 
     // Start listening for Redis TTL expirations to clean up dispatch offers
     startRedisCleanupListener();
+    // Setup Daily Subscription Cron (Simulated via setInterval for demo: runs every minute)
+    setInterval(processSubscriptions, 60000);
 
     // Initialize Socket.io
     initSocket(httpServer);

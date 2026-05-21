@@ -84,3 +84,38 @@ export const useStudioHome = () => {
     staleTime: 1000 * 60 * 5, // 5 mins
   });
 };
+
+// Subscription Hooks
+export const useStudioPlans = () => {
+  return useQuery({
+    queryKey: ['studioPlans'],
+    queryFn: async () => {
+      const { data } = await apiClient.get('/studio/plans');
+      return data;
+    },
+    staleTime: 1000 * 60 * 60, // 1 hour
+  });
+};
+
+export const useMySubscriptions = () => {
+  return useQuery({
+    queryKey: ['mySubscriptions'],
+    queryFn: async () => {
+      const { data } = await apiClient.get('/studio/subscriptions/me');
+      return data;
+    },
+  });
+};
+
+export const useCreateSubscription = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: any) => {
+      const { data } = await apiClient.post('/studio/subscriptions', payload);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['mySubscriptions'] });
+    }
+  });
+};

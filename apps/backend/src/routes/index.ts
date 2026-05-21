@@ -9,6 +9,8 @@ import { addAddress, deleteAddress } from "../controllers/user";
 import { addAddressSchema } from "../schemas/user";
 import { getCollections, getCollectionBySlug, getFreshness, getStudioHome, createCollection, updateFreshness } from "../controllers/studio";
 import { createCollectionSchema, updateFreshnessSchema } from "../schemas/studio";
+import { getPlans, createSubscription, getMySubscription, updateSubscriptionStatus, createPlan } from "../controllers/subscription";
+import { createPlanSchema, createSubscriptionSchema, updateSubscriptionSchema } from "../schemas/subscription";
 import { createCoupon } from "../controllers/coupon";
 import { createCouponSchema } from "../schemas/coupon";
 import { globalSearch } from "../controllers/search";
@@ -53,3 +55,9 @@ router.get('/studio/freshness', getFreshness);
 router.get('/studio/home', getStudioHome);
 router.post('/studio/collections', validateRequest(createCollectionSchema), createCollection);
 router.post('/studio/freshness', validateRequest(updateFreshnessSchema), updateFreshness);
+// Subscription Routes
+router.get('/studio/plans', getPlans);
+router.post('/studio/plans', validateRequest(createPlanSchema), createPlan);
+router.post('/studio/subscriptions', validateRequest(createSubscriptionSchema), createSubscription);
+router.get('/studio/subscriptions/me', getMySubscription);
+router.patch('/studio/subscriptions/:id', validateRequest(updateSubscriptionSchema), updateSubscriptionStatus);

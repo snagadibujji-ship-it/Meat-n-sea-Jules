@@ -10,6 +10,8 @@ export interface IOrder extends Document {
   vendorId: mongoose.Types.ObjectId;
   partnerId?: mongoose.Types.ObjectId;
   offeredRiderId?: mongoose.Types.ObjectId; // Track active dispatch offer
+  sourceMode?: 'bazaar' | 'studio';
+  deliveryTier?: 'standard' | 'priority';
   proofOfDeliveryUrl?: string;
   totalAmountPaise: number;
   customerNote?: string;
@@ -27,6 +29,8 @@ const OrderSchema: Schema = new Schema(
     vendorId: { type: Schema.Types.ObjectId, ref: 'Vendor', required: true },
     partnerId: { type: Schema.Types.ObjectId, ref: 'Rider' }, // Final accepted Delivery rider
     offeredRiderId: { type: Schema.Types.ObjectId, ref: 'Rider' }, // Rider currently evaluating offer
+    sourceMode: { type: String, enum: ['bazaar', 'studio'], default: 'bazaar' },
+    deliveryTier: { type: String, enum: ['standard', 'priority'], default: 'standard' },
     proofOfDeliveryUrl: { type: String },
     totalAmountPaise: { type: Number, required: true }, // Atomic integer tracking
     customerNote: { type: String, maxlength: 250 },

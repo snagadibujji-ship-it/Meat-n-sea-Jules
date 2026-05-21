@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, StyleSheet, FlatList } from 'react-native';
 import { useSearch, useAppStore } from 'shared';
+import StudioSubscriptions from './StudioSubscriptions';
 import ModeSwitcher from '../components/ModeSwitcher';
 import BazaarHome from './BazaarHome';
 import StudioHome from './StudioHome';
@@ -87,7 +88,7 @@ export default function Home() {
         </View>
       ) : (
         <View style={styles.contentContainer}>
-           {isBazaar ? <BazaarHome /> : <StudioHome />}
+           {isBazaar ? <BazaarHome /> : <StudioSubscriptions />}
         </View>
       )}
     </View>

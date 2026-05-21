@@ -35,30 +35,28 @@ function AdminDashboard() {
   const [colSubtitle, setColSubtitle] = useState('');
   const [colSlug, setColSlug] = useState('');
 
+  // Sub Plan State
+  const [planName, setPlanName] = useState('');
+  const [planDesc, setPlanDesc] = useState('');
+  const [planPrice, setPlanPrice] = useState('');
+
   const handleCreateCoupon = () => {
     alert(`Created coupon ${couponCode} for ${discountPercent}% off (max ₹${maxDiscount})`);
     setCouponCode('');
   };
 
   const handleUpdateFreshness = async () => {
-    try {
-        // Mock API Call
-        // await fetch('/api/studio/freshness', { method: 'POST', body: JSON.stringify({ catchTime, harbourArrivalTime, processedTime }) });
-        alert('Freshness Board Updated!');
-    } catch (error) {
-        alert('Failed to update freshness');
-    }
+    alert('Freshness Board Updated!');
   };
 
   const handleCreateCollection = async () => {
-    try {
-         // Mock API Call
-         // await fetch('/api/studio/collections', { method: 'POST', body: JSON.stringify({ title: colTitle, subtitle: colSubtitle, slug: colSlug }) });
-         alert(`Collection ${colTitle} created!`);
-         setColTitle(''); setColSubtitle(''); setColSlug('');
-    } catch (error) {
-        alert('Failed to create collection');
-    }
+     alert(`Collection ${colTitle} created!`);
+     setColTitle(''); setColSubtitle(''); setColSlug('');
+  };
+
+  const handleCreatePlan = async () => {
+      alert(`Subscription Plan ${planName} created!`);
+      setPlanName(''); setPlanDesc(''); setPlanPrice('');
   };
 
   return (
@@ -86,9 +84,9 @@ function AdminDashboard() {
           </p>
         </div>
         <div className="p-6 bg-[#171f33] shadow-lg rounded-xl border border-gray-800">
-          <h2 className="text-gray-400 font-bold mb-2">COD Cash Held</h2>
+          <h2 className="text-gray-400 font-bold mb-2">Active Subs</h2>
           <p className="text-3xl font-black text-[#CC0000]">
-            ₹1,450.00
+            142
           </p>
         </div>
       </div>
@@ -135,46 +133,46 @@ function AdminDashboard() {
             </div>
           </div>
 
-          {/* Collections Manager */}
+          {/* Subscription Manager */}
           <div className="p-8 bg-[#171f33] shadow-lg rounded-xl border border-gray-800">
-            <h2 className="text-2xl font-bold mb-6 text-[#1E6FBF]">Collections Manager</h2>
+            <h2 className="text-2xl font-bold mb-6 text-[#1E6FBF]">Subscription Manager</h2>
 
             <div className="space-y-4">
                 <div>
-                    <label className="block text-gray-400 mb-2 font-bold">Title</label>
+                    <label className="block text-gray-400 mb-2 font-bold">Plan Name</label>
                     <input
                         type="text"
-                        value={colTitle}
-                        onChange={(e) => setColTitle(e.target.value)}
-                        placeholder="e.g. Catch of the Day"
+                        value={planName}
+                        onChange={(e) => setPlanName(e.target.value)}
+                        placeholder="e.g. Weekly Atlantic Salmon"
                         className="w-full p-3 bg-[#0A0F1D] border border-gray-700 rounded-lg text-white"
                     />
                 </div>
                 <div>
-                    <label className="block text-gray-400 mb-2 font-bold">Subtitle</label>
+                    <label className="block text-gray-400 mb-2 font-bold">Description</label>
                     <input
                         type="text"
-                        value={colSubtitle}
-                        onChange={(e) => setColSubtitle(e.target.value)}
-                        placeholder="e.g. Fresh from the net"
+                        value={planDesc}
+                        onChange={(e) => setPlanDesc(e.target.value)}
+                        placeholder="e.g. 1kg of premium salmon delivered weekly"
                         className="w-full p-3 bg-[#0A0F1D] border border-gray-700 rounded-lg text-white"
                     />
                 </div>
                 <div>
-                    <label className="block text-gray-400 mb-2 font-bold">Slug</label>
+                    <label className="block text-gray-400 mb-2 font-bold">Price (₹)</label>
                     <input
-                        type="text"
-                        value={colSlug}
-                        onChange={(e) => setColSlug(e.target.value)}
-                        placeholder="e.g. catch-of-the-day"
+                        type="number"
+                        value={planPrice}
+                        onChange={(e) => setPlanPrice(e.target.value)}
+                        placeholder="e.g. 1500"
                         className="w-full p-3 bg-[#0A0F1D] border border-gray-700 rounded-lg text-white"
                     />
                 </div>
                 <button
-                    onClick={handleCreateCollection}
-                    className="w-full mt-4 bg-[#1E6FBF] text-white font-bold py-3 px-8 rounded-lg hover:bg-blue-600 transition-colors"
+                    onClick={handleCreatePlan}
+                    className="w-full mt-4 bg-[#FFD400] text-black font-bold py-3 px-8 rounded-lg hover:bg-yellow-500 transition-colors"
                 >
-                    Create Collection
+                    Create Studio Plan
                 </button>
             </div>
           </div>
