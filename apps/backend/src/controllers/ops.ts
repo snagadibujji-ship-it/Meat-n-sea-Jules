@@ -5,6 +5,7 @@ import Order from '../models/Order';
 import User from '../models/User';
 import Coupon from '../models/Coupon';
 import Ledger from '../models/Ledger';
+import { getIO } from '../socket';
 
 // =========================================================================
 // GEO-MATH CONTROLLER: Find nearby open vendors
@@ -153,6 +154,9 @@ export const advanceOrderStatus = async (req: Request, res: Response) => {
 
     order.updateStatus(newStatus); // This triggers our custom schema method
     await order.save();
+    const io = getIO();
+    io.to(`order_${orderId}`).emit('status_change', { newStatus });
+
 
     res.json(order);
   } catch (error) {
@@ -262,6 +266,10 @@ export const placeOrder = async (req: Request, res: Response) => {
     });
 
     // Create Ledger Entry
+    // Emit Real-Time Vendor Alert
+    const io = getIO();
+    io.to(`vendor_${vendor._id}`).emit('new_order', { orderId: order._id, totalAmountPaise: finalTotalPaise });
+
     await Ledger.create({
       orderId: order._id,
       totalAmountPaise: finalTotalPaise,

@@ -1,14 +1,38 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Linking, TouchableOpacity } from 'react-native';
-import { useOrderWhatsAppLink, Order } from 'shared'; // Assuming order data is passed or fetched
+import { useOrderWhatsAppLink, Order, useSocket } from 'shared';
 
 interface Props {
-  order: Order; // Simulating prop passing from navigation
+  order: Order;
 }
 
 export default function OrderTracking({ order }: Props) {
-  // Use React Query to fetch the zero-cost WhatsApp fallback link
   const { data, isLoading } = useOrderWhatsAppLink(order?.id || 'mock-id');
+  const socket = useSocket('order', order?.id || 'mock-id');
+
+  const [liveStatus, setLiveStatus] = useState<any[]>(order?.statusTimeline || []);
+  const [riderLocation, setRiderLocation] = useState<{lat: number, lng: number} | null>(null);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on('status_change', (data: { newStatus: string }) => {
+      setLiveStatus(prev => [
+          ...prev,
+          { status: data.newStatus, timestamp: new Date().toISOString() }
+      ]);
+    });
+
+    socket.on('rider_location_update', (data: { lat: number, lng: number }) => {
+        setRiderLocation(data);
+    });
+
+    return () => {
+      socket.off('status_change');
+      socket.off('rider_location_update');
+    };
+  }, [socket]);
+
 
   const handleWhatsAppChat = () => {
     if (data?.link) {
@@ -22,8 +46,16 @@ export default function OrderTracking({ order }: Props) {
     <View style={styles.container}>
       <Text style={styles.title}>Track Order #{order?.id || '123'}</Text>
 
+      {riderLocation && (
+          <View style={styles.mapBanner}>
+              <Text style={styles.mapBannerText}>
+                  📍 Rider is at: {riderLocation.lat.toFixed(4)}, {riderLocation.lng.toFixed(4)}
+              </Text>
+          </View>
+      )}
+
       <View style={styles.timeline}>
-        {order?.statusTimeline?.map((item, index) => {
+        {liveStatus.map((item, index) => {
           const formattedTime = new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
           return (
             <View key={index} style={styles.timelineItem}>
@@ -53,7 +85,9 @@ export default function OrderTracking({ order }: Props) {
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 24, backgroundColor: '#0A0F1D' },
   title: { fontSize: 24, fontWeight: 'bold', marginBottom: 24, color: '#ffffff' },
-  timeline: { paddingLeft: 12, borderLeftWidth: 2, borderLeftColor: '#e5e7eb', marginBottom: 32 },
+  mapBanner: { backgroundColor: '#1E6FBF20', padding: 12, borderRadius: 8, marginBottom: 24, borderWidth: 1, borderColor: '#1E6FBF' },
+  mapBannerText: { color: '#1E6FBF', fontWeight: 'bold', textAlign: 'center' },
+  timeline: { paddingLeft: 12, borderLeftWidth: 2, borderLeftColor: '#374151', marginBottom: 32 },
   timelineItem: { flexDirection: 'row', alignItems: 'center', marginBottom: 24, position: 'relative' },
   node: { width: 12, height: 12, borderRadius: 6, backgroundColor: '#1E6FBF', position: 'absolute', left: -19 },
   timelineTextContainer: { marginLeft: 16 },

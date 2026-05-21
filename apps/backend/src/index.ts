@@ -3,8 +3,11 @@ import path from 'path';
 import mongoose from 'mongoose';
 import routes from './routes';
 import { startRedisCleanupListener } from './workers/dispatchCleanup';
+import { createServer } from 'http';
+import { initSocket } from './socket';
 
 const app = express();
+const httpServer = createServer(app);
 
 app.use(express.json());
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
@@ -23,7 +26,10 @@ mongoose.connect(MONGO_URI)
     // Start listening for Redis TTL expirations to clean up dispatch offers
     startRedisCleanupListener();
 
-    app.listen(PORT, () => {
+    // Initialize Socket.io
+    initSocket(httpServer);
+
+    httpServer.listen(PORT, () => {
       console.log(`Server listening on port ${PORT}`);
     });
   })

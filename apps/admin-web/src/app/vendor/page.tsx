@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
-import { useToggleVendorStatus, useToggleProductStock, t } from 'shared';
+import React, { useState, useRef, useEffect } from 'react';
+import { useToggleVendorStatus, useToggleProductStock, t, useSocket } from 'shared';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const queryClient = new QueryClient();
@@ -20,6 +20,10 @@ export default function AppWrapper() {
 }
 
 function VendorDashboard() {
+  const vendorId = 'vendor-123'; // Mock vendor ID
+  const socket = useSocket('vendor', vendorId);
+  const [liveOrders, setLiveOrders] = useState<any[]>([]);
+
   const [isOpen, setIsOpen] = useState(true);
   const [fssai, setFssai] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -29,11 +33,30 @@ function VendorDashboard() {
   const toggleVendorStatus = useToggleVendorStatus();
   const toggleProductStock = useToggleProductStock();
 
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on('new_order', (data: any) => {
+      // Play a browser ding sound (requires user interaction first in modern browsers, but good for ops)
+      try {
+        const audio = new Audio('/ding.mp3'); // Assuming ding.mp3 is in public dir
+        audio.play().catch(e => console.log('Audio autoplay blocked by browser', e));
+      } catch (e) {}
+
+      // Prepend the new order to the list
+      setLiveOrders(prev => [data, ...prev]);
+    });
+
+    return () => {
+      socket.off('new_order');
+    };
+  }, [socket]);
+
   const handleVendorToggle = async () => {
     const newState = !isOpen;
     setIsOpen(newState);
     try {
-      await toggleVendorStatus.mutateAsync({ vendorId: 'vendor-123', isOpen: newState });
+      await toggleVendorStatus.mutateAsync({ vendorId, isOpen: newState });
     } catch (e) {
       setIsOpen(!newState); // Revert on failure
       alert('Failed to update vendor status.');
@@ -54,24 +77,11 @@ function VendorDashboard() {
     if (!file) return;
 
     setIsUploading(true);
-    const formData = new FormData();
-    formData.append('image', file);
-
-    try {
-      // In a real app, this goes to the API
-      // const res = await fetch('YOUR_API_URL/api/upload', { method: 'POST', body: formData });
-      // const data = await res.json();
-      // setBannerUrl(data.imageUrl);
-
-      // Simulate upload delay for demo
-      setTimeout(() => {
-        setBannerUrl(URL.createObjectURL(file));
-        setIsUploading(false);
-      }, 1000);
-    } catch (err) {
+    // Simulate upload delay for demo
+    setTimeout(() => {
+      setBannerUrl(URL.createObjectURL(file));
       setIsUploading(false);
-      alert('Upload failed');
-    }
+    }, 1000);
   };
 
   const mockOrderNote = "Please clean the fish and cut into medium pieces. Don't forget the head!";
@@ -131,24 +141,44 @@ function VendorDashboard() {
         />
       </div>
 
-      <div className="p-6 bg-[#1E6FBF] shadow-lg rounded-xl border border-blue-800">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold text-white">New Order #8821</h2>
-          <span className="bg-[#FFD400] text-black px-3 py-1 rounded-full font-bold text-sm">JUST IN</span>
-        </div>
+      {/* Live Orders Container */}
+      <div className="space-y-6">
+          <h2 className="text-2xl font-bold text-white mb-2">Live Orders ({liveOrders.length + 1})</h2>
 
-        <div className="bg-[#FFD400] p-6 rounded-lg my-6 shadow-inner transform rotate-1">
-            <h3 className="text-black font-black text-xl uppercase mb-2 tracking-widest flex items-center gap-2">
-              ⚠️ CUSTOMER NOTE
-            </h3>
-            <p className="text-black font-bold text-3xl leading-tight">
-              "{mockOrderNote}"
-            </p>
-        </div>
+          {/* Dynamic incoming orders */}
+          {liveOrders.map((order, idx) => (
+            <div key={idx} className="p-6 bg-[#1E6FBF] shadow-lg rounded-xl border border-blue-800 animate-pulse">
+                <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold text-white">New Order #{order.orderId.substring(order.orderId.length - 4)}</h2>
+                <span className="bg-[#FFD400] text-black px-3 py-1 rounded-full font-bold text-sm">JUST IN</span>
+                </div>
+                <p className="text-white font-bold text-lg mb-4">Amount: ₹{(order.totalAmountPaise / 100).toFixed(2)}</p>
+                <button className="w-full bg-white text-[#1E6FBF] font-black py-4 rounded-lg text-xl hover:bg-gray-100 transition-colors">
+                ACCEPT ORDER
+                </button>
+            </div>
+          ))}
 
-        <button className="w-full bg-white text-[#1E6FBF] font-black py-4 rounded-lg text-xl hover:bg-gray-100 transition-colors">
-          ACCEPT ORDER
-        </button>
+          {/* Static Mock Order */}
+          <div className="p-6 bg-[#1E6FBF] shadow-lg rounded-xl border border-blue-800">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold text-white">New Order #8821</h2>
+              <span className="bg-[#FFD400] text-black px-3 py-1 rounded-full font-bold text-sm">JUST IN</span>
+            </div>
+
+            <div className="bg-[#FFD400] p-6 rounded-lg my-6 shadow-inner transform rotate-1">
+                <h3 className="text-black font-black text-xl uppercase mb-2 tracking-widest flex items-center gap-2">
+                  ⚠️ CUSTOMER NOTE
+                </h3>
+                <p className="text-black font-bold text-3xl leading-tight">
+                  "{mockOrderNote}"
+                </p>
+            </div>
+
+            <button className="w-full bg-white text-[#1E6FBF] font-black py-4 rounded-lg text-xl hover:bg-gray-100 transition-colors">
+              ACCEPT ORDER
+            </button>
+          </div>
       </div>
     </div>
   );
