@@ -5,6 +5,8 @@ import { placeOrderSchema } from "../schemas/order";
 import { dispatchToNearestRider } from '../controllers/dispatch';
 import { requestOtp, verifyOtp } from "../controllers/auth";
 import { requestOtpSchema, verifyOtpSchema } from "../schemas/auth";
+import { globalSearch } from "../controllers/search";
+import { searchSchema } from "../schemas/search";
 import { getDailyReport } from '../controllers/admin';
 
 const router = Router();
@@ -27,3 +29,5 @@ export default router;
 // Auth Routes
 router.post('/auth/otp/request', validateRequest(requestOtpSchema), requestOtp);
 router.post('/auth/otp/verify', validateRequest(verifyOtpSchema), verifyOtp);
+// Search Route
+router.get('/search', validateRequest(searchSchema), globalSearch);

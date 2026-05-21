@@ -3,6 +3,7 @@ import mongoose, { Schema, Document } from 'mongoose';
 export interface IProduct extends Document {
   vendorId: mongoose.Types.ObjectId;
   name: string;
+  category?: string;
   pricePaise: number; // Stored in integer paise to avoid float errors
   stockQuantity: number;
   isOutOfStock: boolean;
@@ -14,6 +15,7 @@ const ProductSchema: Schema = new Schema(
   {
     vendorId: { type: Schema.Types.ObjectId, ref: 'Vendor', required: true },
     name: { type: String, required: true },
+    category: { type: String },
     pricePaise: { type: Number, required: true },
     stockQuantity: { type: Number, required: true, default: 0 },
     isOutOfStock: { type: Boolean, required: true, default: false },
@@ -49,4 +51,5 @@ ProductSchema.pre('findOneAndUpdate', function (next) {
   next();
 });
 
+ProductSchema.index({ name: 'text', category: 'text' });
 export default mongoose.model<IProduct>('Product', ProductSchema);

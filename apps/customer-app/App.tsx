@@ -21,11 +21,12 @@ const mockOrder = {
 
 const queryClient = new QueryClient();
 
+import Home from "./screens/Home";
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <View style={styles.container}>
-        <OrderTracking order={mockOrder} />
+        <Home />
         <StatusBar style="auto" />
       </View>
     </QueryClientProvider>
