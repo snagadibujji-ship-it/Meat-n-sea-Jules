@@ -72,3 +72,15 @@ export const useAdminDailyReport = () => {
     }
   });
 };
+
+// Studio Hooks
+export const useStudioHome = () => {
+  return useQuery({
+    queryKey: ['studioHome'],
+    queryFn: async () => {
+      const { data } = await apiClient.get('/studio/home');
+      return data;
+    },
+    staleTime: 1000 * 60 * 5, // 5 mins
+  });
+};

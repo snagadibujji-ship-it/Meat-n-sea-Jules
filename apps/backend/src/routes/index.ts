@@ -7,6 +7,8 @@ import { requestOtp, verifyOtp } from "../controllers/auth";
 import { requestOtpSchema, verifyOtpSchema } from "../schemas/auth";
 import { addAddress, deleteAddress } from "../controllers/user";
 import { addAddressSchema } from "../schemas/user";
+import { getCollections, getCollectionBySlug, getFreshness, getStudioHome, createCollection, updateFreshness } from "../controllers/studio";
+import { createCollectionSchema, updateFreshnessSchema } from "../schemas/studio";
 import { createCoupon } from "../controllers/coupon";
 import { createCouponSchema } from "../schemas/coupon";
 import { globalSearch } from "../controllers/search";
@@ -44,3 +46,10 @@ router.delete('/users/addresses/:addressId', deleteAddress);
 router.post('/coupons', validateRequest(createCouponSchema), createCoupon);
 // Media Routes
 router.post('/upload', uploadImageMiddleware, uploadMedia);
+// Studio Routes
+router.get('/studio/collections', getCollections);
+router.get('/studio/collections/:slug', getCollectionBySlug);
+router.get('/studio/freshness', getFreshness);
+router.get('/studio/home', getStudioHome);
+router.post('/studio/collections', validateRequest(createCollectionSchema), createCollection);
+router.post('/studio/freshness', validateRequest(updateFreshnessSchema), updateFreshness);
