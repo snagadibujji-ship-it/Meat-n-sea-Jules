@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useAdminDailyReport, useAnalyticsSummary } from 'shared';
+import React, { useState, useEffect } from 'react';
+import { useAdminDailyReport, useAnalyticsSummary, useSocket } from 'shared';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const queryClient = new QueryClient();
@@ -22,6 +22,25 @@ export default function AppWrapper() {
 function AdminDashboard() {
   const { data, isLoading } = useAdminDailyReport();
   const { data: analytics, isLoading: analyticsLoading } = useAnalyticsSummary();
+
+  const [slaBreaches, setSlaBreaches] = useState<any[]>([]);
+
+  // We reuse the vendor socket or a generic admin room
+  // Note: the backend emits to 'admin' room
+  const socket = useSocket('admin', 'global');
+
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on('sla_breach', (payload: any) => {
+        // Play an alarm sound here in a real app
+        setSlaBreaches(prev => [...prev, payload]);
+    });
+
+    return () => {
+        socket.off('sla_breach');
+    };
+  }, [socket]);
 
   const [couponCode, setCouponCode] = useState('');
   const [discountPercent, setDiscountPercent] = useState('10');
@@ -64,6 +83,15 @@ function AdminDashboard() {
   return (
     <div className="p-8 max-w-6xl mx-auto space-y-8 bg-[#0A0F1D] min-h-screen text-white">
       <h1 className="text-4xl font-black text-[#FFD400]">Platform Command Center</h1>
+
+      {slaBreaches.length > 0 && (
+          <div className="p-6 bg-[#CC0000] border-4 border-white shadow-[0_0_20px_#CC0000] rounded-xl animate-pulse">
+              <h2 className="text-3xl font-black text-white uppercase tracking-widest mb-2">🚨 SLA BREACH DETECTED</h2>
+              <p className="text-xl font-bold text-[#FFD400]">
+                  {slaBreaches.length} Studio orders have been pending for > 5 minutes! Immediate dispatch action required.
+              </p>
+          </div>
+      )}
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">

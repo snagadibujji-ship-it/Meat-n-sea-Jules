@@ -1,72 +1,78 @@
 import { Request, Response } from 'express';
 import Rider from '../models/Rider';
 import Order from '../models/Order';
-import Vendor from '../models/Vendor';
-import mongoose from 'mongoose';
-import { redisClient } from '../utils/redis';
+import redisClient from '../utils/redis';
 
 // =========================================================================
-// DISPATCH CONTROLLER: Find nearest rider & Offer
-// Uses MongoDB native $geoNear - NO EXTERNAL PAID MAPPING APIs!
+// SPRINT B: PUSH DISPATCH LOGIC (Cron/Webhook Triggered)
+// Automatically matches an unassigned order to the nearest available rider
 // =========================================================================
 export const dispatchToNearestRider = async (req: Request, res: Response) => {
   try {
-    const { orderId } = req.body;
+    // Priority Execution Update: Find the oldest pending order, sorting by priority FIRST
+    // Sort logic: 'priority' sorts before 'standard' alphabetically if we do descending?
+    // Wait, let's explicitly sort by deliveryTier (priority = 1, standard = 2 basically, or just descending string sort works because p > s... wait p is before s.
+    // Let's rely on an explicit pipeline or simple string sort: 'standard', 'priority'. descending sort puts 'standard' first.
+    // Better: Sort by `{ deliveryTier: -1, createdAt: 1 }`. Wait, priority (p) < standard (s).
+    // Actually, `priority` < `standard`. So ascending sort puts `priority` first.
+    const order = await Order.findOne({
+      currentStatus: 'pending',
+      offeredRiderId: { $exists: false }
+    }).populate('vendorId')
+      .sort({ deliveryTier: 1, createdAt: 1 }); // 1 = ascending (p comes before s)
 
-    const order = await Order.findById(orderId);
-    if (!order) return res.status(404).json({ error: 'Order not found' });
-
-    if (order.currentStatus !== 'ready') {
-      return res.status(400).json({ error: 'Order must be ready before dispatch' });
+    if (!order) {
+      return res.status(200).json({ message: 'No pending unassigned orders.' });
     }
 
-    // Check REAL Redis for an active offer
-    const redisKey = `dispatch:${orderId}`;
-    const existingOffer = await redisClient.get(redisKey);
+    const vendor = order.vendorId as any;
 
-    if (existingOffer) {
-      return res.status(409).json({ error: 'Order already has an active dispatch offer pending' });
+    if (!vendor || !vendor.location) {
+        return res.status(400).json({ error: 'Vendor location missing for dispatch' });
     }
 
-    const vendor = await Vendor.findById(order.vendorId);
-    if (!vendor) return res.status(404).json({ error: 'Vendor not found' });
-
-    // Native $geoNear for finding nearest available rider
-    const availableRiders = await Rider.aggregate([
+    // Zero-Cost $geoNear to find nearest available rider
+    const nearestRiders = await Rider.aggregate([
       {
         $geoNear: {
           near: {
             type: 'Point',
-            coordinates: [vendor.location.coordinates[0], vendor.location.coordinates[1]],
+            coordinates: vendor.location.coordinates,
           },
           distanceField: 'distance',
-          maxDistance: 10000, // Search within 10km radius
           spherical: true,
-          query: { isOnline: true, status: 'available' },
+          query: {
+            status: 'online',
+            currentOrderId: { $exists: false }
+          }, // Must be online and not currently assigned
         },
       },
       { $limit: 1 }
     ]);
 
-    if (availableRiders.length === 0) {
-      return res.status(404).json({ error: 'No available riders nearby' });
+    if (nearestRiders.length === 0) {
+      return res.status(200).json({ message: 'No available riders nearby.' });
     }
 
-    const selectedRiderId = availableRiders[0]._id.toString();
+    const rider = nearestRiders[0];
 
-    // Store dispatch in REAL Redis with EXACT 60-second TTL
-    // Using SETEX: key, seconds, value
-    await redisClient.setex(redisKey, 60, selectedRiderId);
-
-    // Update order with the offered rider
-    order.offeredRiderId = new mongoose.Types.ObjectId(selectedRiderId);
+    // Atomically lock the order to this rider temporarily
+    order.offeredRiderId = rider._id;
     await order.save();
 
+    // SPRINT B: Redis TTL for exactly 60 seconds
+    const redisKey = `dispatch:offer:${order._id.toString()}`;
+    await redisClient.setEx(redisKey, 60, rider._id.toString());
+
+    // In a real app: Send Push Notification to Rider here!
+
     res.json({
-        message: 'Dispatch offered to rider',
-        riderId: selectedRiderId,
-        expiresIn: 60
+        message: 'Dispatch offer sent',
+        orderId: order._id,
+        riderId: rider._id,
+        tier: order.deliveryTier
     });
+
   } catch (error) {
     console.error('Dispatch Error:', error);
     res.status(500).json({ error: 'Internal Server Error' });

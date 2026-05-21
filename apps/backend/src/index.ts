@@ -27,6 +27,8 @@ mongoose.connect(MONGO_URI)
     startRedisCleanupListener();
     // Setup Daily Subscription Cron (Simulated via setInterval for demo: runs every minute)
     setInterval(processSubscriptions, 60000);
+    // Setup SLA Breach Monitor (runs every minute)
+    setInterval(checkSlaBreaches, 60000);
 
     // Initialize Socket.io
     initSocket(httpServer);

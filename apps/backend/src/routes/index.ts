@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { getNearbyVendors, getProducts, toggleProductStock, advanceOrderStatus, placeOrder, getOrderWhatsAppLink, toggleVendorStatus } from '../controllers/ops';
+import { getNearbyVendors, getProducts, toggleProductStock, advanceOrderStatus, placeOrder, completeOrderDelivery, getOrderWhatsAppLink, toggleVendorStatus } from '../controllers/ops';
 import { validateRequest } from "../middlewares/validateRequest";
-import { placeOrderSchema } from "../schemas/order";
+import { placeOrderSchema, completeDeliverySchema } from "../schemas/order";
 import { dispatchToNearestRider } from '../controllers/dispatch';
 import { requestOtp, verifyOtp } from "../controllers/auth";
 import { requestOtpSchema, verifyOtpSchema } from "../schemas/auth";
@@ -29,6 +29,7 @@ router.patch('/vendors/:vendorId/status', toggleVendorStatus);
 router.post('/products/:productId/toggle-stock', toggleProductStock);
 router.post('/orders/:orderId/advance', advanceOrderStatus);
 router.post('/orders/place', validateRequest(placeOrderSchema), placeOrder);
+router.post('/orders/:orderId/complete', validateRequest(completeDeliverySchema), completeOrderDelivery);
 router.get('/orders/:orderId/whatsapp-link', getOrderWhatsAppLink);
 
 // Dispatch Routes

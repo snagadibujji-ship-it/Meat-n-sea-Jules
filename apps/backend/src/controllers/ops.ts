@@ -258,11 +258,17 @@ export const placeOrder = async (req: Request, res: Response) => {
     const platformFeePaise = Math.floor((subtotalPaise * 10) / 100);
 
     // Create Order
+    // Generate OTP for Studio Orders
+    const isStudio = req.body.sourceMode === 'studio';
+    const deliveryOtp = isStudio ? Math.floor(1000 + Math.random() * 9000).toString() : undefined;
     const order = await Order.create({
       customerId: userId,
       vendorId: vendor._id,
       totalAmountPaise: finalTotalPaise,
       paymentMethod: req.body.paymentMethod || 'online',
+      sourceMode: req.body.sourceMode || 'bazaar',
+      deliveryTier: req.body.deliveryTier || 'standard',
+      deliveryOtp,
       customerNote
     });
 
@@ -305,6 +311,40 @@ export const getProducts = async (req: Request, res: Response) => {
 
     const products = await Product.find(query);
     res.json(products);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+// =========================================================================
+// ORDER COMPLETION CONTROLLER (Rider flow with OTP gate)
+// =========================================================================
+export const completeOrderDelivery = async (req: Request, res: Response) => {
+  try {
+    const { orderId } = req.params;
+    const { otp, proofOfDeliveryUrl } = req.body;
+
+    const order = await Order.findById(orderId);
+    if (!order) return res.status(404).json({ error: 'Order not found' });
+
+    if (order.sourceMode === 'studio') {
+        if (!proofOfDeliveryUrl) {
+             return res.status(400).json({ error: 'Proof of Delivery photo is strictly mandatory for Studio orders.' });
+        }
+        if (!otp || otp !== order.deliveryOtp) {
+            return res.status(400).json({ error: 'Invalid Delivery OTP.' });
+        }
+    }
+
+    // Validated, mark complete
+    order.proofOfDeliveryUrl = proofOfDeliveryUrl;
+    order.updateStatus('delivered');
+    await order.save();
+
+    const io = getIO();
+    io.to(`order_${orderId}`).emit('status_change', { newStatus: 'delivered' });
+
+    res.json({ message: 'Delivery Completed' });
   } catch (error) {
     res.status(500).json({ error: 'Internal Server Error' });
   }
