@@ -2,6 +2,8 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IVendor extends Document {
   name: string;
+  bannerUrl?: string;
+  avatarUrl?: string;
   description?: string;
   phone: string;
   location: {
@@ -23,6 +25,8 @@ export interface IVendor extends Document {
 const VendorSchema: Schema = new Schema(
   {
     name: { type: String, required: true },
+    bannerUrl: { type: String },
+    avatarUrl: { type: String },
     description: { type: String },
     phone: { type: String, required: true },
     location: {

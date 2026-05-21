@@ -11,6 +11,7 @@ import { createCoupon } from "../controllers/coupon";
 import { createCouponSchema } from "../schemas/coupon";
 import { globalSearch } from "../controllers/search";
 import { searchSchema } from "../schemas/search";
+import { uploadImageMiddleware, uploadMedia } from "../controllers/media";
 import { getDailyReport } from '../controllers/admin';
 
 const router = Router();
@@ -40,3 +41,5 @@ router.post('/users/addresses', validateRequest(addAddressSchema), addAddress);
 router.delete('/users/addresses/:addressId', deleteAddress);
 // Coupon Routes
 router.post('/coupons', validateRequest(createCouponSchema), createCoupon);
+// Media Routes
+router.post('/upload', uploadImageMiddleware, uploadMedia);

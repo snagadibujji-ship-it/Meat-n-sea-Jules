@@ -1,7 +1,8 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
 import React, { useState } from 'react';
 import DispatchOfferModal from './screens/DispatchOffer';
+import DeliveryProof from './screens/DeliveryProof';
 
 // Note: Using a mock order here just for integration testing purposes.
 const mockOrder = {
@@ -15,14 +16,25 @@ const mockOrder = {
 
 export default function App() {
   const [modalVisible, setModalVisible] = useState(false);
+  const [showProofScreen, setShowProofScreen] = useState(false);
+
+  if (showProofScreen) {
+    return <DeliveryProof />;
+  }
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Rider Dashboard</Text>
 
-      <TouchableOpacity style={styles.btn} onPress={() => setModalVisible(true)}>
-          <Text style={styles.btnText}>Simulate Incoming Dispatch</Text>
-      </TouchableOpacity>
+      <View style={styles.btnContainer}>
+        <TouchableOpacity style={styles.btn} onPress={() => setModalVisible(true)}>
+            <Text style={styles.btnText}>Simulate Incoming Dispatch</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={[styles.btn, styles.secondaryBtn]} onPress={() => setShowProofScreen(true)}>
+            <Text style={styles.btnText}>Test Delivery Proof Flow</Text>
+        </TouchableOpacity>
+      </View>
 
       <DispatchOfferModal
         isVisible={modalVisible}
@@ -43,7 +55,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 20, color: '#ffffff' },
-  btn: { backgroundColor: '#1E6FBF', padding: 16, borderRadius: 8 },
+  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 40, color: '#ffffff' },
+  btnContainer: { gap: 16 },
+  btn: { backgroundColor: '#1E6FBF', padding: 16, borderRadius: 8, alignItems: 'center' },
+  secondaryBtn: { backgroundColor: '#CC0000' },
   btnText: { color: '#fff', fontWeight: 'bold' }
 });

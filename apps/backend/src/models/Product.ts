@@ -3,6 +3,7 @@ import mongoose, { Schema, Document } from 'mongoose';
 export interface IProduct extends Document {
   vendorId: mongoose.Types.ObjectId;
   name: string;
+  imageUrl?: string;
   category?: string;
   pricePaise: number; // Stored in integer paise to avoid float errors
   stockQuantity: number;
@@ -15,6 +16,7 @@ const ProductSchema: Schema = new Schema(
   {
     vendorId: { type: Schema.Types.ObjectId, ref: 'Vendor', required: true },
     name: { type: String, required: true },
+    imageUrl: { type: String },
     category: { type: String },
     pricePaise: { type: Number, required: true },
     stockQuantity: { type: Number, required: true, default: 0 },
