@@ -23,7 +23,9 @@ router.post('/dispatch/offer', dispatchToNearestRider);
 // Admin Routes
 router.get('/admin/daily-report', getDailyReport);
 
-export default router;
+
 // Auth Routes
 router.post('/auth/otp/request', validateRequest(requestOtpSchema), requestOtp);
 router.post('/auth/otp/verify', validateRequest(verifyOtpSchema), verifyOtp);
+
+export default router;
