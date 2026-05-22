@@ -4,9 +4,9 @@ import React, { useState } from 'react';
 import { useToggleVendorStatus, useToggleProductStock, t } from 'shared';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-const queryClient = new QueryClient();
 
 export default function AppWrapper() {
+    const [queryClient] = React.useState(() => new QueryClient());
     // Suppress Next.js static prerender errors by delaying child render to client-side
     const [mounted, setMounted] = React.useState(false);
     React.useEffect(() => setMounted(true), []);

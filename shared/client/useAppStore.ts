@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type AppMode = 'bazaar' | 'studio';
 
@@ -18,22 +19,26 @@ interface AppState {
   setInStudioGeofence: (val: boolean) => void;
 }
 
-// Fallback for cross-platform storage
+// Safely bridge storage for cross-platform support
 const storageAdapter = {
-  getItem: (name: string) => {
+  getItem: async (name: string) => {
     if (typeof window !== 'undefined' && window.localStorage) {
       return window.localStorage.getItem(name);
     }
-    return null;
+    return await AsyncStorage.getItem(name);
   },
-  setItem: (name: string, value: string) => {
+  setItem: async (name: string, value: string) => {
     if (typeof window !== 'undefined' && window.localStorage) {
       window.localStorage.setItem(name, value);
+    } else {
+      await AsyncStorage.setItem(name, value);
     }
   },
-  removeItem: (name: string) => {
+  removeItem: async (name: string) => {
     if (typeof window !== 'undefined' && window.localStorage) {
       window.localStorage.removeItem(name);
+    } else {
+      await AsyncStorage.removeItem(name);
     }
   },
 };
