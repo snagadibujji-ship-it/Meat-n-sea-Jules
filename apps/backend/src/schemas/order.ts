@@ -13,3 +13,7 @@ export const placeOrderSchema = z.object({
     quantity: z.number().int().positive(),
   })).optional(),
 });
+
+export const advanceOrderStatusSchema = z.object({
+    newStatus: z.enum(['pending', 'accepted', 'preparing', 'ready', 'out_for_delivery', 'delivered', 'cancelled']),
+});

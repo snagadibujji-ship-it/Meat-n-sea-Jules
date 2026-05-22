@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 
 const SOCKET_URL = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')
@@ -8,27 +8,28 @@ const SOCKET_URL = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')
 type RoomType = 'vendor' | 'order' | 'rider' | 'admin';
 
 export const useSocket = (roomType: RoomType, roomId: string) => {
-  const socketRef = useRef<Socket | null>(null);
+  const [socket, setSocket] = useState<Socket | null>(null);
 
   useEffect(() => {
     // Initialize Socket Connection
-    socketRef.current = io(SOCKET_URL);
+    const newSocket = io(SOCKET_URL);
+    setSocket(newSocket);
 
-    socketRef.current.on('connect', () => {
-      console.log('Socket connected', socketRef.current?.id);
+    newSocket.on('connect', () => {
+      console.log('Socket connected', newSocket.id);
 
       // Join specific room
       if (roomId === 'global') {
-          socketRef.current?.emit(`join_${roomType}`);
+          newSocket.emit(`join_${roomType}`);
       } else {
-          socketRef.current?.emit(`join_${roomType}`, roomId);
+          newSocket.emit(`join_${roomType}`, roomId);
       }
     });
 
     return () => {
-      socketRef.current?.disconnect();
+      newSocket.disconnect();
     };
   }, [roomType, roomId]);
 
-  return socketRef.current;
+  return socket;
 };

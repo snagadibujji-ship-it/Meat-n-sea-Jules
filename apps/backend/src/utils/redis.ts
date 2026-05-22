@@ -1,11 +1,11 @@
-import Redis from 'ioredis';
+import { Redis } from '@upstash/redis';
 
-const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379';
+const UPSTASH_REDIS_REST_URL = process.env.UPSTASH_REDIS_REST_URL || 'https://example.upstash.io';
+const UPSTASH_REDIS_REST_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN || 'example-token';
 
-export const redisClient = new Redis(REDIS_URL);
-export const redisSubscriber = new Redis(REDIS_URL);
-
-// Configure keyspace notifications so we can react when an offer expires
-redisClient.config('SET', 'notify-keyspace-events', 'Ex').catch((err) => {
-  console.warn('Failed to configure Redis keyspace events (may require admin privileges):', err.message);
+export const redisClient = new Redis({
+  url: UPSTASH_REDIS_REST_URL,
+  token: UPSTASH_REDIS_REST_TOKEN,
 });
+
+export default redisClient;
