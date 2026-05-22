@@ -56,7 +56,7 @@ export const dispatchToNearestRider = async (req: Request, res: Response) => {
 
     // Store dispatch in REAL Redis with EXACT 60-second TTL
     // Using SETEX: key, seconds, value
-    await redisClient.setex(redisKey, 60, selectedRiderId);
+    await redisClient.set(redisKey, selectedRiderId, { ex: 60 });
 
     // Update order with the offered rider
     order.offeredRiderId = new mongoose.Types.ObjectId(selectedRiderId);

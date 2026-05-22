@@ -220,3 +220,27 @@ export const placeOrder = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
+
+// =========================================================================
+// PRODUCT CONTROLLER: Get products by vendor and mode
+// =========================================================================
+export const getProducts = async (req: Request, res: Response) => {
+  try {
+    const { vendorId, mode = 'bazaar' } = req.query;
+
+    if (!vendorId) {
+      return res.status(400).json({ error: 'Vendor ID is required' });
+    }
+
+    const query: any = { vendorId };
+
+    if (mode === 'studio') {
+      query.supportedMode = { $in: ['studio', 'both'] };
+    }
+
+    const products = await Product.find(query);
+    res.json(products);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};

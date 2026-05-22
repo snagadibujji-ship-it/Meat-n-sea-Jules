@@ -19,30 +19,6 @@ interface AppState {
   setInStudioGeofence: (val: boolean) => void;
 }
 
-// Safely bridge storage for cross-platform support
-const storageAdapter = {
-  getItem: async (name: string) => {
-    if (typeof window !== 'undefined' && window.localStorage) {
-      return window.localStorage.getItem(name);
-    }
-    return await AsyncStorage.getItem(name);
-  },
-  setItem: async (name: string, value: string) => {
-    if (typeof window !== 'undefined' && window.localStorage) {
-      window.localStorage.setItem(name, value);
-    } else {
-      await AsyncStorage.setItem(name, value);
-    }
-  },
-  removeItem: async (name: string) => {
-    if (typeof window !== 'undefined' && window.localStorage) {
-      window.localStorage.removeItem(name);
-    } else {
-      await AsyncStorage.removeItem(name);
-    }
-  },
-};
-
 export const useAppStore = create<AppState>()(
   persist(
     (set) => ({
@@ -56,12 +32,13 @@ export const useAppStore = create<AppState>()(
       bazaarOrderCount: 0,
       incrementBazaarOrderCount: () => set((state) => ({ bazaarOrderCount: state.bazaarOrderCount + 1 })),
 
-      inStudioGeofence: true, // Default to true for demo
+      inStudioGeofence: true,
       setInStudioGeofence: (val) => set({ inStudioGeofence: val })
     }),
     {
       name: 'meat-n-sea-app-storage',
-      storage: createJSONStorage(() => storageAdapter),
+      // BUG 4 FIX: Use strictly AsyncStorage to prevent crash on React Native
+      storage: createJSONStorage(() => AsyncStorage),
     }
   )
 );

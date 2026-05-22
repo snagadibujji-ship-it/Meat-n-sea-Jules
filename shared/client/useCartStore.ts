@@ -18,29 +18,6 @@ interface CartState {
   clearCart: (mode: 'bazaar' | 'studio') => void;
 }
 
-const storageAdapter = {
-  getItem: async (name: string) => {
-    if (typeof window !== 'undefined' && window.localStorage) {
-      return window.localStorage.getItem(name);
-    }
-    return await AsyncStorage.getItem(name);
-  },
-  setItem: async (name: string, value: string) => {
-    if (typeof window !== 'undefined' && window.localStorage) {
-      window.localStorage.setItem(name, value);
-    } else {
-      await AsyncStorage.setItem(name, value);
-    }
-  },
-  removeItem: async (name: string) => {
-    if (typeof window !== 'undefined' && window.localStorage) {
-      window.localStorage.removeItem(name);
-    } else {
-      await AsyncStorage.removeItem(name);
-    }
-  },
-};
-
 export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
@@ -75,7 +52,8 @@ export const useCartStore = create<CartState>()(
     }),
     {
       name: 'meat-n-sea-cart-storage',
-      storage: createJSONStorage(() => storageAdapter),
+      // strictly use AsyncStorage to fix native crash
+      storage: createJSONStorage(() => AsyncStorage),
     }
   )
 );
