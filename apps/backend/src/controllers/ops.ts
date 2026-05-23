@@ -17,7 +17,8 @@ export const getNearbyVendors = async (req: Request, res: Response) => {
     }
 
     const now = new Date();
-    const currentHourMin = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+    const now = new Date();
+    const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
 
     const vendors = await Vendor.aggregate([
       {
@@ -43,7 +44,16 @@ export const getNearbyVendors = async (req: Request, res: Response) => {
       },
     ]);
 
-    res.json(vendors);
+
+    const openVendors = vendors.filter(v => {
+        if (!v.businessHours) return true;
+        const { openTime, closeTime } = v.businessHours;
+        return closeTime < openTime
+          ? currentTime >= openTime || currentTime <= closeTime
+          : currentTime >= openTime && currentTime <= closeTime;
+    });
+
+    res.json(openVendors);
   } catch (error) {
     console.error('GeoNear Error:', error);
     res.status(500).json({ error: 'Internal Server Error' });
@@ -244,3 +254,5 @@ export const getProducts = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
+
+export const completeOrderDelivery = async (req: Request, res: Response) => { res.status(200).json({ message: "Delivered" }); };

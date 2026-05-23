@@ -3,10 +3,7 @@ import jwt from 'jsonwebtoken';
 import Otp from '../models/Otp';
 import User from '../models/User';
 
-const JWT_SECRET = process.env.JWT_SECRET;
-if (!JWT_SECRET) {
-  throw new Error('JWT_SECRET is missing');
-}
+const secret = process.env.secret; if (!secret) throw new Error("CRITICAL: secret missing in production");
 
 // Generate OTP (simulated via 6 digits)
 export const requestOtp = async (req: Request, res: Response) => {
@@ -62,7 +59,7 @@ export const verifyOtp = async (req: Request, res: Response) => {
     // BUG 5 FIX: Generate JWT token
     const token = jwt.sign(
       { id: user._id, role: user.role, phone: user.phone },
-      JWT_SECRET,
+      secret,
       { expiresIn: '7d' }
     );
 
