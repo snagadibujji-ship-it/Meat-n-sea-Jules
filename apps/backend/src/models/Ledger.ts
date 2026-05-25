@@ -1,5 +1,4 @@
 import mongoose, { Schema, Document } from 'mongoose';
-import { IOrder } from './Order';
 
 export interface ILedger extends Document {
   orderId: mongoose.Types.ObjectId;
