@@ -1,0 +1,9 @@
+🎯 **What:** The `getOrderWhatsAppLink` method in `ops.ts` lacked testing, leaving potential edge cases and error scenarios vulnerable.
+📊 **Coverage:** The testing setup includes scenarios for:
+- 404 order not found
+- 404 vendor missing contact info
+- 404 vendor with no phone
+- 200 properly formatted links correctly parsed when `+91` prefix is missing
+- 200 properly formatted links correctly parsed when `+91` prefix is available
+- 500 fallback Internal Server Error condition
+✨ **Result:** Test coverage for this endpoint is complete, providing confidence in WhatsApp deep-link generation reliability. The repo is now setup with Jest and jest-mock-extended as standard frameworks to enhance codebase maintainability.
