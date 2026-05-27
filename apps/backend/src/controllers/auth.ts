@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import Otp from '../models/Otp';
@@ -13,7 +14,7 @@ export const requestOtp = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Phone number is required' });
     }
 
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const code = crypto.randomInt(100000, 1000000).toString();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
     await Otp.create({ phone, code, expiresAt });
