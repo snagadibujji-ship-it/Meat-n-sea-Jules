@@ -1,0 +1,12 @@
+
+> rider-app@1.0.0 web /app/apps/rider-app
+> expo start --web --port 8082
+
+Starting project at /app/apps/rider-app
+Starting Metro Bundler
+The following packages should be updated for best compatibility with the installed expo version:
+  @expo/metro-runtime@56.0.12 - expected version: ~6.1.2
+  expo-image-picker@55.0.20 - expected version: ~17.0.11
+Your project may not work correctly until you install the expected versions of the packages.
+Waiting on http://localhost:8082
+Logs for your project will appear below.
