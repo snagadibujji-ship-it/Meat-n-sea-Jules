@@ -18,6 +18,16 @@ export const processSubscriptions = async () => {
 
     console.log(`Found ${dueSubscriptions.length} subscriptions due today.`);
 
+    if (dueSubscriptions.length === 0) return;
+
+    const Vendor = mongoose.model('Vendor');
+    const studioVendor = await Vendor.findOne({ isMnsStudio: true });
+
+    if (!studioVendor) {
+        console.error('No Studio Vendor found to process subscriptions!');
+        throw new Error('No Studio Vendor found');
+    }
+
     for (const sub of dueSubscriptions) {
       const plan = sub.planId as any; // Type override since populated
       if (!plan) continue;
@@ -26,14 +36,6 @@ export const processSubscriptions = async () => {
       session.startTransaction();
 
       try {
-        const Vendor = mongoose.model('Vendor');
-        const studioVendor = await Vendor.findOne({ isMnsStudio: true }).session(session);
-
-        if (!studioVendor) {
-            console.error('No Studio Vendor found to process subscription!');
-            throw new Error('No Studio Vendor found');
-        }
-
         const order = await Order.create([{
             customerId: sub.userId,
             vendorId: studioVendor._id,
