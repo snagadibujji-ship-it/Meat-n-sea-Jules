@@ -5,7 +5,7 @@ import Order from '../models/Order';
 import Ledger from '../models/Ledger';
 
 export const processSubscriptions = async () => {
-  console.log('Running Subscription Cron...');
+
   const now = new Date();
   const startOfDay = new Date(now.setHours(0, 0, 0, 0));
   const endOfDay = new Date(now.setHours(23, 59, 59, 999));
