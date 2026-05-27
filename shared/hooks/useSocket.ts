@@ -16,8 +16,6 @@ export const useSocket = (roomType: RoomType, roomId: string) => {
     setSocket(newSocket);
 
     newSocket.on('connect', () => {
-      console.log('Socket connected', newSocket.id);
-
       // Join specific room
       if (roomId === 'global') {
           newSocket.emit(`join_${roomType}`);
